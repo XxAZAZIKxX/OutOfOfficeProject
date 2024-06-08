@@ -6,9 +6,12 @@ using OutOfOffice.Server.Config;
 using OutOfOffice.Server.Config.ConfigureOptions;
 using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Data;
+using OutOfOffice.Server.Services;
+using OutOfOffice.Server.Services.Implemetation;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuration
 builder.Configuration.AddJsonFile("appsettings.secret.json", optional:false);
 
 builder.Services.AddSingleton<JwtConfiguration>();
@@ -22,6 +25,12 @@ builder.Services.AddDbContext<DataContext>((provider, optionsBuilder) =>
     optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
     optionsBuilder.UseSnakeCaseNamingConvention();
 }, ServiceLifetime.Transient, ServiceLifetime.Singleton);
+
+// Services
+
+builder.Services.AddTransient<IAuthRepository, AuthRepository>();
+
+// Authentification
 
 builder.Services.AddAuthentication(options =>
 {

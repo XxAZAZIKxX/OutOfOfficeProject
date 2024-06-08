@@ -15,8 +15,13 @@ public sealed class DataContext : DbContext
     public DataContext(DbContextOptions<DataContext> options) : base(options)
     {
         if (!_isFirstCreation) return;
-        Database.EnsureDeleted(); // TODO Удалить после готовой бд
         Database.EnsureCreated();
         _isFirstCreation = false;
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AuthCredential>().HasOne(p => p.Employee).WithMany().HasForeignKey(p => p.EmployeeId);
+        base.OnModelCreating(modelBuilder);
     }
 }

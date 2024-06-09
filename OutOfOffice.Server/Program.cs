@@ -8,15 +8,19 @@ using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Data;
 using OutOfOffice.Server.Services;
 using OutOfOffice.Server.Services.Implemetation;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddProblemDetails();
 
 // Configuration
 builder.Configuration.AddJsonFile("appsettings.secret.json", optional:false);
 
 builder.Services.AddSingleton<JwtConfiguration>();
 builder.Services.AddSingleton<DatabaseConfiguration>();
-builder.Services.AddTransient<IConfigureOptions<JwtBearerOptions>, ConfigureJwtOptions>();
+builder.Services.AddSingleton<RedisConfiguration>();
+builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJwtOptions>();
 builder.Services.AddDbContext<DataContext>((provider, optionsBuilder) =>
 {
     var configuration = provider.GetRequiredService<DatabaseConfiguration>();
@@ -24,11 +28,21 @@ builder.Services.AddDbContext<DataContext>((provider, optionsBuilder) =>
 
     optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
     optionsBuilder.UseSnakeCaseNamingConvention();
-}, ServiceLifetime.Transient, ServiceLifetime.Singleton);
+}, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
 // Services
+builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
+{
+    var configuration = provider.GetRequiredService<RedisConfiguration>();
 
-builder.Services.AddTransient<IAuthRepository, AuthRepository>();
+    var options = new ConfigurationOptions()
+    {
+        EndPoints = configuration.EndPoints
+    };
+    return ConnectionMultiplexer.Connect(options);
+});
+builder.Services.AddScoped<IAuthRepository, DataContextAuthRepository>();
+builder.Services.AddScoped<IRefreshTokenRepository, RedisRefreshTokenRepository>();
 
 // Authentification
 

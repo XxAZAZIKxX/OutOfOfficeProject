@@ -5,7 +5,7 @@ using OutOfOffice.Server.Data;
 
 namespace OutOfOffice.Server.Services.Implemetation;
 
-public class AuthRepository(DataContext dataContext) : IAuthRepository
+public class DataContextAuthRepository(DataContext dataContext) : IAuthRepository
 {
     public Employee? IsUserCredentialsLegit(AuthRequest auth)
     {

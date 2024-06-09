@@ -13,7 +13,8 @@ namespace OutOfOffice.Server.Controllers;
 public class AuthController(
     IAuthRepository authRepository,
     JwtConfiguration jwtConfiguration,
-    IRefreshTokenRepository refreshTokenRepository
+    IRefreshTokenRepository refreshTokenRepository,
+    ILogger<AuthController> logger
     ) : ControllerBase
 {
     [HttpPost, Route("login")]
@@ -25,6 +26,7 @@ public class AuthController(
             if (user is null) return Unauthorized("User credentials are incorrect");
             var refreshToken = GenerateRefreshToken();
             refreshTokenRepository.SetRefreshToken(user.Id, refreshToken, jwtConfiguration.RefreshTokenLifetime);
+            logger.LogInformation("Employee with {id} id succesfully logged in", user.Id);
             return Ok(GenerateTokenResponse(user.Id, user.Position.ToString("G"), refreshToken));
         }));
     }
@@ -34,15 +36,22 @@ public class AuthController(
     {
         return await Task.Run(new Func<IActionResult>(() =>
         {
-            var token = new JwtSecurityToken(authorization.Replace("Bearer ", ""));
+            var jwtTokenString = authorization.Replace("Bearer ", "");
+            var token = new JwtSecurityToken(jwtTokenString);
+
+            if (jwtConfiguration.IsJwtTokenSignatureValid(jwtTokenString) is false)
+            {
+                return Unauthorized("Invalid jwt token!");
+            }
 
             var userId = token.Claims.GetUserId();
             var role = token.Claims.GetUserRole();
             if (refreshTokenRepository.IsRefreshTokenValid(userId, refreshToken) is false)
                 return Unauthorized("Refresh token is invalid or expired!");
-            
+
             var generatedRefreshToken = GenerateRefreshToken();
             refreshTokenRepository.SetRefreshToken(userId, generatedRefreshToken, jwtConfiguration.RefreshTokenLifetime);
+            logger.LogInformation("Employee with {id} id succesfully refreshed token", userId);
             return Ok(GenerateTokenResponse(userId, role, generatedRefreshToken));
         }));
     }
@@ -57,10 +66,9 @@ public class AuthController(
             ExpireAt = DateTimeOffset.UtcNow.Add(jwtConfiguration.TokenLifetime).ToUnixTimeSeconds(),
             RefreshToken = refreshToken
         };
-
     }
 
-    private string GenerateRefreshToken()
+    private static string GenerateRefreshToken()
     {
         Span<byte> bytes = stackalloc byte[16];
         RandomNumberGenerator.Fill(bytes);

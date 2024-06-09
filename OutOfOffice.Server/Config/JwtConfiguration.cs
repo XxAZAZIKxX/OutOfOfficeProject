@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace OutOfOffice.Server.Config;
@@ -11,6 +12,30 @@ public class JwtConfiguration : BaseConfiguration
     public TimeSpan TokenLifetime { get; }
     public TimeSpan RefreshTokenLifetime { get; }
     public string[] Audiences { get; }
+
+    public TokenValidationParameters ValidationParameters
+    {
+        get
+        {
+            return new TokenValidationParameters()
+            {
+                ValidateAudience = true,
+                ValidateIssuer = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+
+                ValidAudiences = Audiences,
+                ValidIssuer = Issuer,
+                IssuerSigningKey = GetSymmetricSecurityKey(),
+
+                LifetimeValidator = (before, expires, token, parameters) =>
+                {
+                    if (expires is null) return false;
+                    return DateTime.UtcNow.CompareTo(expires) <= 0;
+                }
+            };
+        }
+    }
 
     private readonly byte[] _secret;
 
@@ -49,5 +74,21 @@ public class JwtConfiguration : BaseConfiguration
             );
 
         return new JwtSecurityTokenHandler().WriteToken(jwt);
+    }
+
+    public bool IsJwtTokenSignatureValid(string jwtToken)
+    {
+        try
+        {
+            var parameters = ValidationParameters;
+            parameters.LifetimeValidator = null;
+            parameters.ValidateLifetime = false;
+            new JwtSecurityTokenHandler().ValidateToken(jwtToken, parameters, out _);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

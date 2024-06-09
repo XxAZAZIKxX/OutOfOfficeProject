@@ -11,16 +11,17 @@ using OutOfOffice.Server.Services.Implemetation;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddProblemDetails();
 
 // Configuration
-builder.Configuration.AddJsonFile("appsettings.secret.json", optional:false);
+builder.Configuration.AddJsonFile("appsettings.secret.json", optional: false);
 
 builder.Services.AddSingleton<JwtConfiguration>();
 builder.Services.AddSingleton<DatabaseConfiguration>();
 builder.Services.AddSingleton<RedisConfiguration>();
+
 builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigureJwtOptions>();
+
 builder.Services.AddDbContext<DataContext>((provider, optionsBuilder) =>
 {
     var configuration = provider.GetRequiredService<DatabaseConfiguration>();
@@ -41,8 +42,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
     };
     return ConnectionMultiplexer.Connect(options);
 });
-builder.Services.AddScoped<IAuthRepository, DataContextAuthRepository>();
+builder.Services.AddScoped<IAuthRepository, DbAuthRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RedisRefreshTokenRepository>();
+builder.Services.AddScoped<ILeaveRequestRepository, DbLeaveRequestRepository>();
+builder.Services.AddScoped<DbUnitOfWork>();
 
 // Authentification
 
@@ -55,7 +58,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     // Employee
-    options.AddPolicy(Policies.EmployeePolicy, policy => policy.RequireRole(Policies.EmployeePolicy, Policies.AdministratorPolicy));
+    options.AddPolicy(Policies.EmployeePolicy, policy => policy
+        .RequireRole(Policies.EmployeePolicy, Policies.HrManagerPolicy,
+            Policies.ProjectManagerPolicy, Policies.AdministratorPolicy));
     // Hr manager
     options.AddPolicy(Policies.HrManagerPolicy, policy => policy.RequireRole(Policies.HrManagerPolicy, Policies.AdministratorPolicy));
     // Project manager

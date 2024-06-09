@@ -20,7 +20,13 @@ public class ConfigureJwtOptions(JwtConfiguration configuration) : IConfigureNam
 
             ValidAudiences = configuration.Audiences,
             ValidIssuer = configuration.Issuer,
-            IssuerSigningKey = configuration.GetSymmetricSecurityKey()
+            IssuerSigningKey = configuration.GetSymmetricSecurityKey(),
+
+            LifetimeValidator = (before, expires, token, parameters) =>
+            {
+                if (expires is null) return false;
+                return DateTime.UtcNow.CompareTo(expires) <= 0;
+            }
         };
     }
 }

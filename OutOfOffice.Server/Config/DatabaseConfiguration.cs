@@ -4,10 +4,10 @@ namespace OutOfOffice.Server.Config;
 
 public class DatabaseConfiguration : BaseConfiguration
 {
-    public string Server { get; private init; }
-    public string User { get; private init; }
-    internal string Password { get; private init; }
-    public string DatabaseName { get; private init; }
+    public string Server { get; }
+    public string User { get; }
+    internal string Password { get; }
+    public string DatabaseName { get; }
     public DatabaseConfiguration(IConfiguration configuration)
     {
         var section = configuration.GetRequiredSection("Database");

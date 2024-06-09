@@ -7,25 +7,33 @@ namespace OutOfOffice.Server.Config;
 
 public class JwtConfiguration : BaseConfiguration
 {
-    public readonly string Issuer;
-    public readonly TimeSpan TokenDuration;
-    public readonly string[] Audiences;
+    public string Issuer { get; }
+    public TimeSpan TokenLifetime { get; }
+    public TimeSpan RefreshTokenLifetime { get; }
+    public string[] Audiences { get; }
 
     private readonly byte[] _secret;
 
     public JwtConfiguration(IConfiguration configuration)
     {
-        var section = configuration.GetRequiredSection("JwtConfiguration");
+        var section = configuration.GetRequiredSection("Jwt");
         Issuer = section.GetRequiredSection("Issuer").Get<string?>() ?? throw GetSimpleMissingException("Issuer");
 
-        var secretString = section.GetRequiredSection("Secret").Get<string?>() ?? throw GetSimpleMissingException("Secret");
+        var secretString = section.GetRequiredSection("Secret").Get<string?>()
+                           ?? throw GetSimpleMissingException("Secret");
         _secret = Encoding.UTF8.GetBytes(secretString);
 
-        var durationNumber = section.GetRequiredSection("Duration").Get<ulong?>() ?? throw GetSimpleMissingException("Duration");
-        TokenDuration = TimeSpan.FromSeconds(durationNumber);
+        var tokenLifetimeNumber = section.GetRequiredSection("TokenLifetime").Get<ulong?>()
+                                  ?? throw GetSimpleMissingException("TokenLifetime");
+        TokenLifetime = TimeSpan.FromSeconds(tokenLifetimeNumber);
 
-        Audiences = section.GetRequiredSection("Audiences").Get<string[]?>() ?? throw GetSimpleMissingException("Audiences");
+        Audiences = section.GetRequiredSection("Audiences").Get<string[]?>()
+                    ?? throw GetSimpleMissingException("Audiences");
         if (Audiences.Length == 0) throw new Exception(@"""Audiences"" array must contains more than 0 elements!");
+
+        var refreshTokenLifetimeNumber
+            = section.GetRequiredSection("RefreshLifetime").Get<ulong?>() ?? throw GetSimpleMissingException("RefreshLifetime");
+        RefreshTokenLifetime = TimeSpan.FromSeconds(refreshTokenLifetimeNumber);
     }
 
     public SymmetricSecurityKey GetSymmetricSecurityKey() => new(_secret);
@@ -34,8 +42,8 @@ public class JwtConfiguration : BaseConfiguration
     {
         var jwt = new JwtSecurityToken(
             issuer: Issuer,
-            expires: DateTime.UtcNow.Add(TokenDuration),
-            claims: [new Claim("id", userId.ToString()), new Claim(ClaimTypes.Role, role)],
+            expires: DateTime.UtcNow.Add(TokenLifetime),
+            claims: [new Claim("userId", userId.ToString()), new Claim(ClaimTypes.Role, role)],
             audience: audience ?? Audiences.First(),
             signingCredentials: new SigningCredentials(GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256)
             );

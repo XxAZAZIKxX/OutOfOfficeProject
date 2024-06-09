@@ -15,7 +15,11 @@ public class AuthController(IAuthRepository authRepository, JwtConfiguration jwt
         {
             var user = authRepository.IsUserCredentialsLegit(authRequest);
             if (user is null) return Unauthorized("User credentials are incorrect");
-            return Ok(jwtConfiguration.GenerateJwtToken(user.Id, user.Position.ToString("G")));
+            return Ok(new
+            {
+                SecurityToken = jwtConfiguration.GenerateJwtToken(user.Id, user.Position.ToString("G")),
+                Role = user.Position.ToString("G")
+            });
         }));
     }
 }

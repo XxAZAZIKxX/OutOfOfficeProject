@@ -9,7 +9,7 @@ namespace OutOfOffice.Core.Models;
 public class AuthCredential
 {
     [Key] public ulong Id { get; set; }
-    [Column, StringLength(25)] public string Username { get; set; }
+    [Column] [StringLength(25)] public string Username { get; set; }
     [Column] public ulong EmployeeId { get; set; }
     [Column] public Employee Employee { get; set; }
     [Column] public string PasswordHash { get; set; }

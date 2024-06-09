@@ -4,7 +4,6 @@ using OutOfOffice.Core.Models.Enums;
 
 namespace OutOfOffice.Core.Models;
 
-
 public class ApprovalRequest
 {
     [Key] public ulong Id { get; set; }

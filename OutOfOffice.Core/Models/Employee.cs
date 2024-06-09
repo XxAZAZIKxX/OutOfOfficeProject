@@ -13,7 +13,8 @@ public class Employee
     [Column] public EmployeePosition Position { get; set; }
     [Column] public EmployeeStatus Status { get; set; }
 
-    [Column, JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Column]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Employee? PeoplePartner { get; set; }
 
     [Column] public int OutOfOfficeBalance { get; set; }

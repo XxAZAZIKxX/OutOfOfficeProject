@@ -5,5 +5,5 @@ namespace OutOfOffice.Server.Services;
 
 public interface IAuthRepository
 {
-    Employee? IsUserCredentialsLegit(AuthRequest credential);
+    Task<Employee?> IsUserCredentialsLegitAsync(AuthRequest credential);
 }

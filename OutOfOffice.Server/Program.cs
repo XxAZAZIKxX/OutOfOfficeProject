@@ -45,6 +45,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 builder.Services.AddScoped<IAuthRepository, DbAuthRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RedisRefreshTokenRepository>();
 builder.Services.AddScoped<ILeaveRequestRepository, DbLeaveRequestRepository>();
+builder.Services.AddScoped<IEmployeeRepository, DbEmployeeRepository>();
 builder.Services.AddScoped<DbUnitOfWork>();
 
 // Authentification

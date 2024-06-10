@@ -20,40 +20,37 @@ public class AuthController(
     [HttpPost, Route("login")]
     public async Task<IActionResult> Login([FromBody] AuthRequest authRequest)
     {
-        return await Task.Run(new Func<IActionResult>(() =>
-        {
-            var user = authRepository.IsUserCredentialsLegit(authRequest);
-            if (user is null) return Unauthorized("User credentials are incorrect");
-            var refreshToken = GenerateRefreshToken();
-            refreshTokenRepository.SetRefreshToken(user.Id, refreshToken, jwtConfiguration.RefreshTokenLifetime);
-            logger.LogInformation("Employee with {id} id succesfully logged in", user.Id);
-            return Ok(GenerateTokenResponse(user.Id, user.Position.ToString("G"), refreshToken));
-        }));
+        var user = await authRepository.IsUserCredentialsLegitAsync(authRequest);
+        if (user is null) return Unauthorized("User credentials are incorrect");
+        var refreshToken = GenerateRefreshToken();
+        await refreshTokenRepository.SetRefreshTokenAsync(user.Id, refreshToken, jwtConfiguration.RefreshTokenLifetime);
+        logger.LogInformation("Employee with {id} id succesfully logged in", user.Id);
+        return Ok(GenerateTokenResponse(user.Id, user.Position.ToString("G"), refreshToken));
     }
 
     [HttpPost, Route("refresh")]
     public async Task<IActionResult> RefreshToken([FromHeader] string authorization, [FromHeader] string refreshToken)
     {
-        return await Task.Run(new Func<IActionResult>(() =>
+        var jwtTokenString = authorization.Replace("Bearer ", "");
+        var token = new JwtSecurityToken(jwtTokenString);
+
+        if (jwtConfiguration.IsJwtTokenSignatureValid(jwtTokenString) is false)
         {
-            var jwtTokenString = authorization.Replace("Bearer ", "");
-            var token = new JwtSecurityToken(jwtTokenString);
+            return Unauthorized("Invalid jwt token!");
+        }
 
-            if (jwtConfiguration.IsJwtTokenSignatureValid(jwtTokenString) is false)
-            {
-                return Unauthorized("Invalid jwt token!");
-            }
+        var userId = token.Claims.GetUserId();
+        var role = token.Claims.GetUserRole();
 
-            var userId = token.Claims.GetUserId();
-            var role = token.Claims.GetUserRole();
-            if (refreshTokenRepository.IsRefreshTokenValid(userId, refreshToken) is false)
-                return Unauthorized("Refresh token is invalid or expired!");
+        var isRefreshValid = await refreshTokenRepository.IsRefreshTokenValidAsync(userId, refreshToken);
+        if (isRefreshValid is false) return Unauthorized("Refresh token is invalid or expired!");
 
-            var generatedRefreshToken = GenerateRefreshToken();
-            refreshTokenRepository.SetRefreshToken(userId, generatedRefreshToken, jwtConfiguration.RefreshTokenLifetime);
-            logger.LogInformation("Employee with {id} id succesfully refreshed token", userId);
-            return Ok(GenerateTokenResponse(userId, role, generatedRefreshToken));
-        }));
+        var generatedRefreshToken = GenerateRefreshToken();
+        await refreshTokenRepository.SetRefreshTokenAsync(userId, generatedRefreshToken, jwtConfiguration.RefreshTokenLifetime);
+
+        logger.LogInformation("Employee with {id} id succesfully refreshed token", userId);
+
+        return Ok(GenerateTokenResponse(userId, role, generatedRefreshToken));
     }
 
     private TokenResponse GenerateTokenResponse(ulong userId, string role, string refreshToken)

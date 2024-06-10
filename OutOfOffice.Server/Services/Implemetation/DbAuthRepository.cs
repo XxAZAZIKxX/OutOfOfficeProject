@@ -7,13 +7,13 @@ namespace OutOfOffice.Server.Services.Implemetation;
 
 public class DbAuthRepository(DataContext dataContext) : IAuthRepository
 {
-    public Employee? IsUserCredentialsLegit(AuthRequest auth)
+    public async Task<Employee?> IsUserCredentialsLegitAsync(AuthRequest auth)
     {
         var authCredentials = dataContext.AuthCredentials
             .AsNoTracking()
             .Include(p => p.Employee);
 
-        var single = authCredentials.SingleOrDefault(p =>
+        var single = await authCredentials.SingleOrDefaultAsync(p =>
             p.Username == auth.Username && p.PasswordHash == auth.PasswordHash);
 
         return single?.Employee;

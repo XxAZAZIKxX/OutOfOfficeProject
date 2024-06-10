@@ -4,8 +4,9 @@ namespace OutOfOffice.Server.Services;
 
 public interface ILeaveRequestRepository
 {
-    LeaveRequest[] GetLeaveRequests();
-    LeaveRequest[] GetLeaveRequestsOfEmployee(ulong employeeId);
-    void UpdateLeaveRequest(LeaveRequest leaveRequest, Action<LeaveRequest> update);
-    void AddLeaveRequest(LeaveRequest leaveRequest);
+    Task<LeaveRequest[]> GetLeaveRequestsAsync();
+    Task<LeaveRequest[]> GetLeaveRequestsOfEmployeeAsync(ulong employeeId);
+    Task UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update);
+    Task AddLeaveRequestAsync(LeaveRequest leaveRequest);
+    Task<LeaveRequest?> GetLeaveRequestAsync(ulong requestId);
 }

@@ -1,4 +1,5 @@
-﻿using OutOfOffice.Core.Models;
+﻿using OutOfOffice.Core.Exceptions.NotFound;
+using OutOfOffice.Core.Models;
 
 namespace OutOfOffice.Server.Repositories;
 
@@ -30,6 +31,7 @@ public interface ILeaveRequestRepository
     /// <param name="leaveRequestId">The id of the leave request to be updated</param>
     /// <param name="update">Action to be performed on the leave request</param>
     /// <returns>Updated leave request</returns>
+    /// <exception cref="LeaveRequestNotFound"></exception>
     Task<LeaveRequest> UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update);
     /// <summary>
     /// Add new leave request to the repository

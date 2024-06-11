@@ -1,4 +1,5 @@
-﻿using OutOfOffice.Core.Models;
+﻿using OutOfOffice.Core.Exceptions.NotFound;
+using OutOfOffice.Core.Models;
 
 namespace OutOfOffice.Server.Repositories;
 
@@ -33,5 +34,6 @@ public interface IApprovalRequestRepository
     /// <param name="requestId">The ID of the approval request to update</param>
     /// <param name="update">An action to perform on the approval request</param>
     /// <returns>The updated approval request</returns>
+    /// <exception cref="ApprovalRequestNotFound"></exception>
     Task<ApprovalRequest> UpdateApprovalRequestAsync(ulong requestId, Action<ApprovalRequest> update);
 }

@@ -22,11 +22,19 @@ public class ProjectsController(
         return Ok(await projectRepository.GetProjectsAsync());
     }
 
-    [HttpPost, Route("add"), Authorize(Policy = Policies.ProjectManagerPolicy)]
+    [HttpGet, Route("get/{id}"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
+    public async Task<IActionResult> GetProject([FromRoute] ulong id)
+    {
+        var project = await projectRepository.GetProjectAsync(id);
+        if (project is null) return NotFound($"Project with id {id} not found!");
+        return Ok(project);
+    }
+
+    [HttpPost, Route("add")]
     public async Task<IActionResult> AddNewProject([FromBody] NewProjectRequest projectRequest)
     {
         var manager = await employeeRepository.GetEmployeeAsync(User.Claims.GetUserId());
-        if (manager is null) throw new Exception("User is not exists");
+        if (manager is null) return NotFound("User is not exists");
 
         var newProject = await projectRepository.AddNewProjectAsync(new Project
         {
@@ -88,6 +96,30 @@ public class ProjectsController(
     [HttpPost, Route("members/add")]
     public async Task<IActionResult> AddNewProjectMember([FromQuery] ulong projectId, [FromQuery] ulong employeeId)
     {
-        throw new NotImplementedException();
+        var employee = await employeeRepository.GetEmployeeAsync(employeeId);
+        if (employee is null) return NotFound($"Employee doesn't exists. Employee id: {employeeId}");
+        try
+        {
+            await projectRepository.AddNewEmployeeToProjectAsync(projectId, employee);
+        }
+        catch (ProjectNotFoundException)
+        {
+            return NotFound($"Project with id: {projectId} not found!");
+        }
+        return Ok(await projectRepository.GetProjectAsync(projectId));
+    }
+
+    [HttpPost, Route("members/remove")]
+    public async Task<IActionResult> RemoveProjectMember([FromQuery] ulong projectId, [FromQuery] ulong employeeId)
+    {
+        try
+        {
+            var project = await projectRepository.RemoveEmployeeFromProjectAsync(projectId, employeeId);
+            return Ok(project);
+        }
+        catch (Exception e) when (e is ProjectNotFoundException or EmployeeNotFoundException)
+        {
+            return NotFound(e);
+        }
     }
 }

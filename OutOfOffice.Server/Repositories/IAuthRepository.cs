@@ -1,18 +1,18 @@
 ﻿using OutOfOffice.Core.Models;
-using OutOfOffice.Core.Requests;
 
 namespace OutOfOffice.Server.Repositories;
 
 public interface IAuthRepository
 {
     /// <summary>
-    /// Validates the <see cref="credential"/> and returns an <see cref="Employee"/>
-    /// when <see cref="credential"/> is correct
+    /// Validates the user credential and returns an <see cref="Employee"/>
+    /// when user credential is correct
     /// </summary>
-    /// <param name="credential">User credential to check</param>
+    /// <param name="username">Unique employee login name</param>
+    /// <param name="paswordHash">Hash of user password </param>
     /// <returns>
     /// The <see cref="Employee"/> when validation is succesful;
     /// otherwise <see langword="null"/>
     /// </returns>
-    Task<Employee?> IsUserCredentialsLegitAsync(AuthRequest credential);
+    Task<Employee?> IsUserCredentialsLegitAsync(string username, string paswordHash);
 }

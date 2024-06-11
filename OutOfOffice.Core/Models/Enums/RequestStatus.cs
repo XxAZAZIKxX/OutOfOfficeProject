@@ -4,5 +4,6 @@ public enum RequestStatus
 {
     New,
     Approved,
-    Rejected
+    Rejected,
+    Cancelled
 }

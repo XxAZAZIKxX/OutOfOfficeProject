@@ -1,6 +1,6 @@
 ﻿using StackExchange.Redis;
 
-namespace OutOfOffice.Server.Repositories.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implementation;
 
 /// <summary>
 /// Implementation of <see cref="IRefreshTokenRepository"/> which uses RedisDatabase

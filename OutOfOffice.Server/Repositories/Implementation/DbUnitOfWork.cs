@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Repositories.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implementation;
 
 /// <summary>
 /// Represents a unit of work for database operations. Uses <see cref="DataContext"/>

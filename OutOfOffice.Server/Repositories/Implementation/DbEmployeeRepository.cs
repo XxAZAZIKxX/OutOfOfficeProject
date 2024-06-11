@@ -2,7 +2,7 @@
 using OutOfOffice.Core.Models;
 using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Repositories.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implementation;
 
 /// <summary>
 /// Implementation of <see cref="IEmployeeRepository"/> which uses <see cref="DataContext"/>

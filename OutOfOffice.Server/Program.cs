@@ -10,7 +10,7 @@ using OutOfOffice.Server.Config.ConfigureOptions;
 using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Data;
 using OutOfOffice.Server.Repositories;
-using OutOfOffice.Server.Repositories.Implemetation;
+using OutOfOffice.Server.Repositories.Implementation;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);

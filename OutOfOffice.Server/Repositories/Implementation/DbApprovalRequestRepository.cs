@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OutOfOffice.Core.Exceptions.NotFound;
 using OutOfOffice.Core.Models;
 using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Repositories.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implementation;
 
 /// <summary>
 /// Implementation of <see cref="IApprovalRequestRepository"/> which uses <see cref="DataContext"/>
@@ -31,7 +32,8 @@ public class DbApprovalRequestRepository(DataContext dataContext) : IApprovalReq
 
     public async Task<ApprovalRequest> UpdateApprovalRequestAsync(ulong requestId, Action<ApprovalRequest> update)
     {
-        var request = await dataContext.ApprovalRequests.SingleAsync(p=>p.Id == requestId);
+        var request = await GetApprovalRequestAsync(requestId) ??
+                      throw new ApprovalRequestNotFound($"Approval request with id {requestId} doesnt exists");
 
         update(request);
         await dataContext.SaveChangesAsync();

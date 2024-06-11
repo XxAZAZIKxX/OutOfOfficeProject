@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OutOfOffice.Core.Exceptions.NotFound;
 using OutOfOffice.Core.Models;
 using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Repositories.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implementation;
 
 /// <summary>
 /// Implementation of <see cref="IProjectRepository"/> which using <see cref="DataContext"/>
@@ -51,11 +52,11 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
         return project;
     }
 
-    public async Task AddNewEmployeeToProjectAsync(ulong projectId, Employee employee)
+    public async Task<Project> AddNewEmployeeToProjectAsync(ulong projectId, Employee employee)
     {
-        var project = await dataContext.Projects
-            .Include(p => p.ProjectMembers)
-            .SingleAsync(p => p.Id == projectId);
+        var project = await GetProjectAsync(projectId);
+        if (project == null) 
+            throw new ProjectNotFoundException($"Project with id: {projectId} not found!");
 
         project.ProjectMembers.Add(new ProjectMember()
         {
@@ -64,5 +65,17 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
         });
 
         await dataContext.SaveChangesAsync();
+        return project;
+    }
+
+    public async Task<Project> RemoveEmployeeFromProjectAsync(ulong projectId, ulong employeeId)
+    {
+        var project = await GetProjectAsync(projectId);
+        if (project is null) throw new ProjectNotFoundException($"Project doesnt exists with id: {projectId}");
+        var member = project.ProjectMembers.SingleOrDefault(p=>p.EmployeeId == employeeId);
+        if (member is null) throw new EmployeeNotFoundException($"Project doesnt contains employee with id: {projectId}");
+        project.ProjectMembers.Remove(member);
+        await dataContext.SaveChangesAsync();
+        return project;
     }
 }

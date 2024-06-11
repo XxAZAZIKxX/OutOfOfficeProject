@@ -40,6 +40,49 @@ public class ProjectsController(
         return Ok(newProject);
     }
 
+    [HttpPost, Route("update")]
+    public async Task<IActionResult> UpdateProject(
+        [FromQuery] ulong projectId, [FromBody] UpdateProjectRequest updateProjectRequest)
+    {
+        try
+        {
+            var project = await projectRepository.UpdateProjectAsync(projectId, project =>
+            {
+                if (updateProjectRequest.ProjectName.HasValue)
+                    project.ProjectName = updateProjectRequest.ProjectName.Value;
+                if (updateProjectRequest.ProjectType.HasValue)
+                    project.ProjectType = updateProjectRequest.ProjectType.Value;
+                if (updateProjectRequest.StartDate.HasValue)
+                    project.StartDate = updateProjectRequest.StartDate.Value;
+                if (updateProjectRequest.Comment.HasValue)
+                    project.Comment = updateProjectRequest.Comment.Value;
+            });
+            return Ok(project);
+        }
+        catch (ProjectNotFoundException)
+        {
+            return NotFound($"Project with {projectId} id not found!");
+        }
+    }
+
+    [HttpPost, Route("close")]
+    public async Task<IActionResult> CloseProject([FromQuery] ulong projectId)
+    {
+        try
+        {
+            var project = await projectRepository.UpdateProjectAsync(projectId, project =>
+            {
+                project.EndDate = DateTimeOffset.UtcNow;
+                project.Status = ProjectStatus.Inactive;
+            });
+            return Ok(project);
+        }
+        catch (ProjectNotFoundException e)
+        {
+            return NotFound($"Project with id {projectId} not found!");
+        }
+    }
+
     [HttpPost, Route("members/add")]
     public async Task<IActionResult> AddNewProjectMember([FromQuery] ulong projectId, [FromQuery] ulong employeeId)
     {

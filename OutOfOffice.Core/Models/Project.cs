@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using OutOfOffice.Core.Models.Enums;
 
 namespace OutOfOffice.Core.Models;
@@ -7,6 +8,7 @@ namespace OutOfOffice.Core.Models;
 public class Project
 {
     [Key] public ulong Id { get; set; }
+    [Column] public string ProjectName { get; set; }
     [Column] public ProjectType ProjectType { get; set; }
     [Column] public DateTimeOffset StartDate { get; set; }
     [Column] public DateTimeOffset? EndDate { get; set; }

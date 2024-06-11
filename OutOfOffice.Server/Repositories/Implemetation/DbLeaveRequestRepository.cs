@@ -4,6 +4,9 @@ using OutOfOffice.Server.Data;
 
 namespace OutOfOffice.Server.Repositories.Implemetation;
 
+/// <summary>
+/// Implementation of <see cref="ILeaveRequestRepository"/> which using <see cref="DataContext"/>
+/// </summary>
 public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRepository
 {
     public async Task<LeaveRequest[]> GetLeaveRequestsAsync()
@@ -22,17 +25,20 @@ public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRe
             .ToArrayAsync();
     }
 
-    public async Task UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update)
+    public async Task<LeaveRequest> UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update)
     {
         var leaveRequest = await dataContext.LeaveRequests.SingleAsync(p=>p.Id == leaveRequestId);
         update(leaveRequest);
         await dataContext.SaveChangesAsync();
+        return leaveRequest;
     }
 
-    public async Task AddLeaveRequestAsync(LeaveRequest leaveRequest)
+    public async Task<LeaveRequest> AddLeaveRequestAsync(LeaveRequest leaveRequest)
     {
-        await dataContext.LeaveRequests.AddAsync(leaveRequest);
+        var result = new LeaveRequest(leaveRequest);
+        await dataContext.LeaveRequests.AddAsync(result);
         await dataContext.SaveChangesAsync();
+        return result;
     }
 
     public async Task<LeaveRequest?> GetLeaveRequestAsync(ulong requestId)

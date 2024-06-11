@@ -5,6 +5,9 @@ using OutOfOffice.Server.Data;
 
 namespace OutOfOffice.Server.Repositories.Implemetation;
 
+/// <summary>
+/// Implementation if <see cref="IAuthRepository"/> which uses <see cref="DataContext"/>
+/// </summary>
 public class DbAuthRepository(DataContext dataContext) : IAuthRepository
 {
     public async Task<Employee?> IsUserCredentialsLegitAsync(AuthRequest auth)

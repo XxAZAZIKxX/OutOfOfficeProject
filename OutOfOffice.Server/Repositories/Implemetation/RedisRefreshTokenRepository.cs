@@ -2,6 +2,9 @@
 
 namespace OutOfOffice.Server.Repositories.Implemetation;
 
+/// <summary>
+/// Implementation of <see cref="IRefreshTokenRepository"/> which uses RedisDatabase
+/// </summary>
 public class RedisRefreshTokenRepository(IConnectionMultiplexer redis) : IRefreshTokenRepository
 {
     private readonly IDatabase _database = redis.GetDatabase(0);

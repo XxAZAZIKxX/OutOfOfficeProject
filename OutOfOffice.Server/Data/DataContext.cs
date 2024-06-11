@@ -18,10 +18,4 @@ public sealed class DataContext : DbContext
         Database.EnsureCreated();
         _isFirstCreation = false;
     }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<AuthCredential>().HasOne(p => p.Employee).WithMany().HasForeignKey(p => p.EmployeeId);
-        base.OnModelCreating(modelBuilder);
-    }
 }

@@ -14,8 +14,8 @@ namespace OutOfOffice.Server.Controllers;
 public class LeaveRequestsController(
     DbUnitOfWork dbUnitOfWork,
     ILeaveRequestRepository leaveRequestRepository,
-    IEmployeeRepository employeeRepository,
-    ILogger<LeaveRequestsController> logger
+    IApprovalRequestRepository approvalRequestRepository,
+    IEmployeeRepository employeeRepository
     ) : ControllerBase
 {
     [HttpGet, Route("get"), Authorize(Policy = Policies.EmployeePolicy)]
@@ -32,19 +32,30 @@ public class LeaveRequestsController(
     public async Task<IActionResult> AddNewLeaveRequest([FromBody] NewLeaveRequest request)
     {
         var userId = User.Claims.GetUserId();
-        var employee = await employeeRepository.GetEmployeeAsync(userId);
-        if (employee is null) throw new Exception($"Employee was null! Employee id: {userId}");
-        var leaveRequest = new LeaveRequest
-        {
-            AbsenceReason = request.Reason,
-            Comment = request.Comment,
-            StartDate = request.StartDate,
-            EndDate = request.EndDate,
-            Employee = employee,
-            Status = RequestStatus.New
-        };
-        await leaveRequestRepository.AddLeaveRequestAsync(leaveRequest);
-        return Ok(leaveRequest);
-    }
+        await using var transaction = await dbUnitOfWork.BeginTransactionAsync();
 
+        try
+        {
+            var employee = await employeeRepository.GetEmployeeAsync(userId);
+            if (employee is null) throw new Exception($"Employee was null! Employee id: {userId}");
+            var leaveRequest = new LeaveRequest
+            {
+                AbsenceReason = request.Reason,
+                Comment = request.Comment,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                Employee = employee,
+                Status = RequestStatus.New
+            };
+            await leaveRequestRepository.AddLeaveRequestAsync(leaveRequest);
+
+            await transaction.CommitAsync();
+            return Ok(leaveRequest);
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

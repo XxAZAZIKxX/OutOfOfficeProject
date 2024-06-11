@@ -1,5 +1,8 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OutOfOffice.Server.Config;
@@ -31,7 +34,6 @@ builder.Services.AddDbContext<DataContext>((provider, optionsBuilder) =>
     optionsBuilder.UseSnakeCaseNamingConvention();
 }, ServiceLifetime.Scoped, ServiceLifetime.Singleton);
 
-// Services
 builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 {
     var configuration = provider.GetRequiredService<RedisConfiguration>();
@@ -42,11 +44,17 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
     };
     return ConnectionMultiplexer.Connect(options);
 });
+
+// Repositories
+
+builder.Services.AddScoped<DbUnitOfWork>();
+
 builder.Services.AddScoped<IAuthRepository, DbAuthRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RedisRefreshTokenRepository>();
 builder.Services.AddScoped<ILeaveRequestRepository, DbLeaveRequestRepository>();
 builder.Services.AddScoped<IEmployeeRepository, DbEmployeeRepository>();
-builder.Services.AddScoped<DbUnitOfWork>();
+builder.Services.AddScoped<IApprovalRequestRepository, DbApprovalRequestRepository>();
+builder.Services.AddScoped<IProjectRepository, DbProjectRepository>();
 
 // Authentification
 
@@ -76,6 +84,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

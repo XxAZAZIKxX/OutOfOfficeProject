@@ -13,4 +13,18 @@ public class LeaveRequest
     [Column] public DateTimeOffset EndDate { get; set; }
     [Column] public string? Comment { get; set; }
     [Column] public RequestStatus Status { get; set; } = RequestStatus.New;
+
+    public LeaveRequest() { }
+
+    public LeaveRequest(LeaveRequest other) 
+    {
+        Id = other.Id;
+        Employee = other.Employee;
+        AbsenceReason = other.AbsenceReason;
+        StartDate = other.StartDate;
+        EndDate = other.EndDate;
+        Comment = other.Comment;
+        Status = other.Status;
+    }
+
 }

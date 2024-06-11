@@ -13,4 +13,15 @@ public class Project
     [Column] public Employee ProjectManager { get; set; }
     [Column] public string? Comment { get; set; }
     [Column] public ProjectStatus Status { get; set; }
+    public Project() { }
+    public Project(Project other)
+    {
+        Id = other.Id;
+        ProjectType = other.ProjectType;
+        StartDate = other.StartDate;
+        EndDate = other.EndDate;
+        ProjectManager = other.ProjectManager;
+        Comment = other.Comment;
+        Status = other.Status;
+    }
 }

@@ -11,4 +11,15 @@ public class ApprovalRequest
     [Column] public LeaveRequest LeaveRequest { get; set; }
     [Column] public RequestStatus Status { get; set; }
     [Column] public string? Comment { get; set; }
+
+    public ApprovalRequest() { }
+
+    public ApprovalRequest(ApprovalRequest other)
+    {
+        Id = other.Id;
+        Approver = other.Approver;
+        LeaveRequest = other.LeaveRequest;
+        Status = other.Status;
+        Comment = other.Comment;
+    }
 }

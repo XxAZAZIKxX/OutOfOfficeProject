@@ -1,6 +1,6 @@
 ﻿using StackExchange.Redis;
 
-namespace OutOfOffice.Server.Services.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implemetation;
 
 public class RedisRefreshTokenRepository(IConnectionMultiplexer redis) : IRefreshTokenRepository
 {

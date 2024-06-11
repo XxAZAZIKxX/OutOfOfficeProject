@@ -6,8 +6,8 @@ using OutOfOffice.Server.Config;
 using OutOfOffice.Server.Config.ConfigureOptions;
 using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Data;
-using OutOfOffice.Server.Services;
-using OutOfOffice.Server.Services.Implemetation;
+using OutOfOffice.Server.Repositories;
+using OutOfOffice.Server.Repositories.Implemetation;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);

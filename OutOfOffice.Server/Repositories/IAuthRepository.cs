@@ -1,7 +1,7 @@
 ﻿using OutOfOffice.Core.Models;
 using OutOfOffice.Core.Requests;
 
-namespace OutOfOffice.Server.Services;
+namespace OutOfOffice.Server.Repositories;
 
 public interface IAuthRepository
 {

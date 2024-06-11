@@ -5,7 +5,7 @@ using OutOfOffice.Core.Requests;
 using OutOfOffice.Core.Responses;
 using OutOfOffice.Server.Config;
 using OutOfOffice.Server.Core.Extensions;
-using OutOfOffice.Server.Services;
+using OutOfOffice.Server.Repositories;
 
 namespace OutOfOffice.Server.Controllers;
 

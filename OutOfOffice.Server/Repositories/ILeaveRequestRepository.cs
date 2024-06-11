@@ -1,6 +1,6 @@
 ﻿using OutOfOffice.Core.Models;
 
-namespace OutOfOffice.Server.Services;
+namespace OutOfOffice.Server.Repositories;
 
 public interface ILeaveRequestRepository
 {

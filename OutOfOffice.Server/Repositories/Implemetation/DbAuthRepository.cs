@@ -3,7 +3,7 @@ using OutOfOffice.Core.Models;
 using OutOfOffice.Core.Requests;
 using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Services.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implemetation;
 
 public class DbAuthRepository(DataContext dataContext) : IAuthRepository
 {

@@ -2,7 +2,7 @@
 using OutOfOffice.Core.Models;
 using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Services.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implemetation;
 
 public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRepository
 {

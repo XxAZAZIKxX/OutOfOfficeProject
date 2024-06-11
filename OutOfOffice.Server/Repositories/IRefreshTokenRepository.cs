@@ -1,4 +1,4 @@
-﻿namespace OutOfOffice.Server.Services;
+﻿namespace OutOfOffice.Server.Repositories;
 
 public interface IRefreshTokenRepository
 {

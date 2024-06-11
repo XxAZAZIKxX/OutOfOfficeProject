@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Services.Implemetation;
+namespace OutOfOffice.Server.Repositories.Implemetation;
 
 public class DbUnitOfWork(DataContext dataContext)
 {

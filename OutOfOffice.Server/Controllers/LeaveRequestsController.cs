@@ -5,8 +5,8 @@ using OutOfOffice.Core.Models.Enums;
 using OutOfOffice.Core.Requests;
 using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Core.Extensions;
-using OutOfOffice.Server.Services;
-using OutOfOffice.Server.Services.Implemetation;
+using OutOfOffice.Server.Repositories;
+using OutOfOffice.Server.Repositories.Implemetation;
 
 namespace OutOfOffice.Server.Controllers;
 

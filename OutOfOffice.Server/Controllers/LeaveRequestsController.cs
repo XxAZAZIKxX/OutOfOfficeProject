@@ -10,7 +10,7 @@ using OutOfOffice.Server.Repositories.Implementation;
 
 namespace OutOfOffice.Server.Controllers;
 
-[ApiController, Route("/requests/leave/")]
+[ApiController, Route("/requests/leave/"), Authorize(Policy = Policies.EmployeePolicy)]
 public class LeaveRequestsController(
     DbUnitOfWork dbUnitOfWork,
     ILeaveRequestRepository leaveRequestRepository,
@@ -18,7 +18,7 @@ public class LeaveRequestsController(
     IEmployeeRepository employeeRepository
     ) : ControllerBase
 {
-    [HttpGet, Route("get"), Authorize(Policy = Policies.EmployeePolicy)]
+    [HttpGet, Route("get")]
     public async Task<IActionResult> GetLeaveRequests()
     {
         if (User.Claims.GetUserRole() == Policies.EmployeePolicy)
@@ -37,7 +37,7 @@ public class LeaveRequestsController(
         try
         {
             var employee = await employeeRepository.GetEmployeeAsync(userId);
-            if (employee is null) throw new Exception($"Employee was null! Employee id: {userId}");
+            if (employee is null) return NotFound($"Employee with {userId} id not found!");
             var leaveRequest = new LeaveRequest
             {
                 AbsenceReason = request.Reason,
@@ -52,7 +52,7 @@ public class LeaveRequestsController(
             await transaction.CommitAsync();
             return Ok(leaveRequest);
         }
-        catch (Exception e)
+        catch
         {
             await transaction.RollbackAsync();
             throw;

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OutOfOffice.Core.Exceptions.NotFound;
 using OutOfOffice.Core.Models;
+using OutOfOffice.Core.Models.Enums;
 using OutOfOffice.Core.Requests;
 using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Core.Extensions;
@@ -8,13 +10,13 @@ using OutOfOffice.Server.Repositories;
 
 namespace OutOfOffice.Server.Controllers;
 
-[ApiController, Route("[controller]"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
+[ApiController, Route("[controller]"), Authorize(Policy = Policies.ProjectManagerPolicy)]
 public class ProjectsController(
         IProjectRepository projectRepository,
         IEmployeeRepository employeeRepository
         ) : ControllerBase
 {
-    [HttpGet, Route("get")]
+    [HttpGet, Route("get"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
     public async Task<IActionResult> GetAllProjects()
     {
         return Ok(await projectRepository.GetProjectsAsync());

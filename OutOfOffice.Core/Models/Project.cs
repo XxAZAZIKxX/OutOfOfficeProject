@@ -13,6 +13,11 @@ public class Project
     [Column] public Employee ProjectManager { get; set; }
     [Column] public string? Comment { get; set; }
     [Column] public ProjectStatus Status { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public ICollection<ProjectMember> ProjectMembers { get; } = new List<ProjectMember>();
+
+
     public Project() { }
     public Project(Project other)
     {

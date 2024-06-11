@@ -20,7 +20,7 @@ public class AuthController(
     [HttpPost, Route("login")]
     public async Task<IActionResult> Login([FromBody] AuthRequest authRequest)
     {
-        var user = await authRepository.IsUserCredentialsLegitAsync(authRequest);
+        var user = await authRepository.IsUserCredentialsLegitAsync(authRequest.Username, authRequest.PasswordHash);
         if (user is null) return Unauthorized("User credentials are incorrect");
         var refreshToken = GenerateRefreshToken();
         await refreshTokenRepository.SetRefreshTokenAsync(user.Id, refreshToken, jwtConfiguration.RefreshTokenLifetime);
@@ -36,7 +36,7 @@ public class AuthController(
 
         if (jwtConfiguration.IsJwtTokenSignatureValid(jwtTokenString) is false)
         {
-            return Unauthorized("Invalid jwt token!");
+            return Unauthorized("Invalid authorization token!");
         }
 
         var userId = token.Claims.GetUserId();

@@ -28,7 +28,22 @@ public class LeaveRequestsController(
         return Ok(await leaveRequestRepository.GetLeaveRequestsAsync());
     }
 
-    [HttpPost, Route("add"), Authorize(Policy = Policies.EmployeePolicy)]
+    [HttpGet, Route("get/{id}")]
+    public async Task<IActionResult> GetLeaveRequest([FromRoute] ulong id)
+    {
+        var employee = await employeeRepository.GetEmployeeAsync(id);
+        if (employee is null) return NotFound($"Employee with id {id} not found!");
+
+        var role = User.Claims.GetUserRole();
+        var userId = User.Claims.GetUserId();
+
+        if (role != Policies.EmployeePolicy) return Ok(employee);
+        if (employee.Id != userId) return Forbid("You aren't allowed to do that!");
+
+        return Ok(employee);
+    }
+
+    [HttpPost, Route("add")]
     public async Task<IActionResult> AddNewLeaveRequest([FromBody] NewLeaveRequest request)
     {
         var userId = User.Claims.GetUserId();

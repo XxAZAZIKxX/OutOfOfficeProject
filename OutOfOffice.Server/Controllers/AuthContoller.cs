@@ -18,18 +18,18 @@ public class AuthController(
     ) : ControllerBase
 {
     [HttpPost, Route("login")]
-    public async Task<IActionResult> Login([FromBody] AuthRequest authRequest)
+    public async Task<ActionResult<TokenResponse>> Login([FromBody] AuthRequest authRequest)
     {
         var user = await authRepository.IsUserCredentialsLegitAsync(authRequest.Username, authRequest.PasswordHash);
         if (user is null) return Unauthorized("User credentials are incorrect");
         var refreshToken = GenerateRefreshToken();
         await refreshTokenRepository.SetRefreshTokenAsync(user.Id, refreshToken, jwtConfiguration.RefreshTokenLifetime);
         logger.LogInformation("Employee with {id} id succesfully logged in", user.Id);
-        return Ok(GenerateTokenResponse(user.Id, user.Position.ToString("G"), refreshToken));
+        return GenerateTokenResponse(user.Id, user.Position.ToString("G"), refreshToken);
     }
 
     [HttpPost, Route("refresh")]
-    public async Task<IActionResult> RefreshToken([FromHeader] string authorization, [FromHeader] string refreshToken)
+    public async Task<ActionResult<TokenResponse>> RefreshToken([FromHeader] string authorization, [FromHeader] string refreshToken)
     {
         var jwtTokenString = authorization.Replace("Bearer ", "");
         var token = new JwtSecurityToken(jwtTokenString);

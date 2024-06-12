@@ -13,13 +13,19 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
     public async Task<Project?> GetProjectAsync(ulong projectId)
     {
         return await dataContext.Projects
+            .Include(p=>p.ProjectManager)
             .Include(p=>p.ProjectMembers)
+            .ThenInclude(p=>p.Employee)
             .SingleOrDefaultAsync(p => p.Id == projectId);
     }
 
     public async Task<Project[]> GetProjectsAsync()
     {
-        return await dataContext.Projects.AsNoTracking().ToArrayAsync();
+        return await dataContext.Projects.AsNoTracking()
+            .Include(p=>p.ProjectManager)
+            .Include(p=>p.ProjectMembers)
+            .ThenInclude(p=>p.Employee)
+            .ToArrayAsync();
     }
 
     public async Task<Project[]> GetProjectsWithEmployeeAsync(ulong employeeId)

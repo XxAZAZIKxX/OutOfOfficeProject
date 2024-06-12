@@ -12,12 +12,20 @@ public class DbApprovalRequestRepository(DataContext dataContext) : IApprovalReq
 {
     public async Task<ApprovalRequest?> GetApprovalRequestAsync(ulong requestId)
     {
-        return await dataContext.ApprovalRequests.SingleOrDefaultAsync(p => p.Id == requestId);
+        return await dataContext.ApprovalRequests
+            .Include(p=>p.Approver)
+            .Include(p=>p.LeaveRequest)
+            .ThenInclude(p=>p.Employee)
+            .SingleOrDefaultAsync(p => p.Id == requestId);
     }
 
     public async Task<ApprovalRequest[]> GetApprovalRequstsAsync()
     {
-        return await dataContext.ApprovalRequests.AsNoTracking().ToArrayAsync();
+        return await dataContext.ApprovalRequests.AsNoTracking()
+            .Include(p=>p.Approver)
+            .Include(p=>p.LeaveRequest)
+            .ThenInclude(p=>p.Employee)
+            .ToArrayAsync();
     }
 
     public async Task<ApprovalRequest> AddApprovalRequestAsync(ApprovalRequest request)

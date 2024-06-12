@@ -12,7 +12,9 @@ public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRe
 {
     public async Task<LeaveRequest?> GetLeaveRequestAsync(ulong requestId)
     {
-        return await dataContext.LeaveRequests.SingleOrDefaultAsync(p => p.Id == requestId);
+        return await dataContext.LeaveRequests
+            .Include(p=>p.Employee)
+            .SingleOrDefaultAsync(p => p.Id == requestId);
     }
 
     public async Task<LeaveRequest[]> GetLeaveRequestsAsync()

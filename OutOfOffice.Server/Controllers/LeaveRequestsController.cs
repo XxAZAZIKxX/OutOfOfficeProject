@@ -19,28 +19,29 @@ public class LeaveRequestsController(
     ) : ControllerBase
 {
     [HttpGet, Route("get")]
-    public async Task<IActionResult> GetLeaveRequests()
+    public async Task<ActionResult<LeaveRequest[]>> GetLeaveRequests()
     {
         if (User.Claims.GetUserRole() == Policies.EmployeePolicy)
         {
-            return Ok(await leaveRequestRepository.GetLeaveRequestsOfEmployeeAsync(User.Claims.GetUserId()));
+            return await leaveRequestRepository.GetLeaveRequestsOfEmployeeAsync(User.Claims.GetUserId());
         }
-        return Ok(await leaveRequestRepository.GetLeaveRequestsAsync());
+        return await leaveRequestRepository.GetLeaveRequestsAsync();
     }
 
     [HttpGet, Route("get/{id}")]
-    public async Task<IActionResult> GetLeaveRequest([FromRoute] ulong id)
+    public async Task<ActionResult<LeaveRequest>> GetLeaveRequest([FromRoute] ulong id)
     {
-        var employee = await employeeRepository.GetEmployeeAsync(id);
-        if (employee is null) return NotFound($"Employee with id {id} not found!");
+        var leaveRequest = await leaveRequestRepository.GetLeaveRequestAsync(id);
 
-        var role = User.Claims.GetUserRole();
+        if (leaveRequest is null) return NotFound($"Leave request with id {id} not found!");
+
         var userId = User.Claims.GetUserId();
+        var role = User.Claims.GetUserRole();
 
-        if (role != Policies.EmployeePolicy) return Ok(employee);
-        if (employee.Id != userId) return Forbid("You aren't allowed to do that!");
+        if (role is Policies.EmployeePolicy && leaveRequest.Employee.Id != userId)
+            return Forbid("You are not allowed to get this");
 
-        return Ok(employee);
+        return leaveRequest;
     }
 
     [HttpPost, Route("add")]

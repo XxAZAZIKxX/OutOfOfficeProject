@@ -87,7 +87,7 @@ public class ProjectsController(
             });
             return Ok(project);
         }
-        catch (ProjectNotFoundException e)
+        catch (ProjectNotFoundException)
         {
             return NotFound($"Project with id {projectId} not found!");
         }
@@ -117,9 +117,13 @@ public class ProjectsController(
             var project = await projectRepository.RemoveEmployeeFromProjectAsync(projectId, employeeId);
             return Ok(project);
         }
-        catch (Exception e) when (e is ProjectNotFoundException or EmployeeNotFoundException)
+        catch (ProjectNotFoundException)
         {
-            return NotFound(e);
+            return NotFound($"Project with id {projectId} not found!");
+        }
+        catch (EmployeeNotFoundException)
+        {
+            return NotFound($"Employee with id {employeeId} not found!");
         }
     }
 }

@@ -1,17 +1,14 @@
-﻿namespace OutOfOffice.Core.Utilities;
+﻿using System.Text.Json.Serialization;
 
-public struct Optional
-{
-    public static Optional None = new();
-}
+namespace OutOfOffice.Core.Utilities;
 
+[JsonConverter(typeof(OptionalJsonConverterFactory))]
 public readonly struct Optional<T>
 {
     private readonly T? _value;
-    public bool HasValue { get; private init; } = false;
+    public bool HasValue { get; } = false;
     public T Value => _value ?? throw new InvalidOperationException("No value present");
     public static Optional<T> None => new();
-
 
     public Optional(T value)
     {
@@ -20,14 +17,12 @@ public readonly struct Optional<T>
     }
 
     public static implicit operator Optional<T>(T value) => new(value);
-    public static implicit operator Optional<T>(Optional _) => None;
 
     public override bool Equals(object? obj)
     {
         if (obj is not Optional<T> other) return false;
 
-        return _value!.Equals(obj) ||
-            EqualityComparer<T>.Default.Equals(_value, other._value);
+        return _value!.Equals(obj) || EqualityComparer<T>.Default.Equals(_value, other._value);
     }
 
     public static bool operator ==(Optional<T> left, Optional<T> right) => left.Equals(right);

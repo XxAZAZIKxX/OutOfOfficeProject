@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using OutOfOffice.Core.Converters;
 
 namespace OutOfOffice.Core.Utilities;
 

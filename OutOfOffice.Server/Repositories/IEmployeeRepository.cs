@@ -1,4 +1,6 @@
-﻿using OutOfOffice.Core.Models;
+﻿using OutOfOffice.Core.Exceptions.NotFound;
+using OutOfOffice.Core.Models;
+using OutOfOffice.Core.Utilities;
 
 namespace OutOfOffice.Server.Repositories;
 
@@ -12,7 +14,8 @@ public interface IEmployeeRepository
     /// The <see cref="Employee"/> if existing;
     /// otherwise <see langword="null"></see>
     /// </returns>
-    Task<Employee?> GetEmployeeAsync(ulong employeeId);
+    /// <exception cref="EmployeeNotFoundException"></exception>
+    Task<Result<Employee>> GetEmployeeAsync(ulong employeeId);
     /// <summary>
     /// Get all employees from the repository
     /// </summary>

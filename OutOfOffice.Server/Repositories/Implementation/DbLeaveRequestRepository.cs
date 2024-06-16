@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OutOfOffice.Core.Exceptions.NotFound;
 using OutOfOffice.Core.Models;
+using OutOfOffice.Core.Utilities;
 using OutOfOffice.Server.Data;
 
 namespace OutOfOffice.Server.Repositories.Implementation;
@@ -10,11 +11,16 @@ namespace OutOfOffice.Server.Repositories.Implementation;
 /// </summary>
 public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRepository
 {
-    public async Task<LeaveRequest?> GetLeaveRequestAsync(ulong requestId)
+    public async Task<Result<LeaveRequest>> GetLeaveRequestAsync(ulong requestId)
     {
-        return await dataContext.LeaveRequests
-            .Include(p=>p.Employee)
+        var singleOrDefault = await dataContext.LeaveRequests
+            .Include(p => p.Employee)
             .SingleOrDefaultAsync(p => p.Id == requestId);
+
+        if (singleOrDefault is null)
+            return new LeaveRequestNotFound($"Leave request with id `{requestId}` not found!");
+
+        return singleOrDefault;
     }
 
     public async Task<LeaveRequest[]> GetLeaveRequestsAsync()
@@ -30,12 +36,12 @@ public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRe
             .ToArrayAsync();
     }
 
-    public async Task<LeaveRequest> UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update)
+    public async Task<Result<LeaveRequest>> UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update)
     {
-        var leaveRequest = await GetLeaveRequestAsync(leaveRequestId) ??
-                           throw new LeaveRequestNotFound($"Leave request with {leaveRequestId} doesnt exists");
+        var leaveRequest = await GetLeaveRequestAsync(leaveRequestId);
+        if (leaveRequest.IsFailed) return leaveRequest;
 
-        update(leaveRequest);
+        update(leaveRequest.Value);
         await dataContext.SaveChangesAsync();
 
         return leaveRequest;
@@ -43,9 +49,8 @@ public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRe
 
     public async Task<LeaveRequest> AddLeaveRequestAsync(LeaveRequest leaveRequest)
     {
-        var result = new LeaveRequest(leaveRequest);
-        await dataContext.LeaveRequests.AddAsync(result);
+        await dataContext.LeaveRequests.AddAsync(leaveRequest);
         await dataContext.SaveChangesAsync();
-        return result;
+        return leaveRequest;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OutOfOffice.Core.Exceptions.NotFound;
 using OutOfOffice.Core.Models;
+using OutOfOffice.Core.Utilities;
 using OutOfOffice.Server.Data;
 
 namespace OutOfOffice.Server.Repositories.Implementation;
@@ -10,13 +11,17 @@ namespace OutOfOffice.Server.Repositories.Implementation;
 /// </summary>
 public class DbApprovalRequestRepository(DataContext dataContext) : IApprovalRequestRepository
 {
-    public async Task<ApprovalRequest?> GetApprovalRequestAsync(ulong requestId)
+    public async Task<Result<ApprovalRequest>> GetApprovalRequestAsync(ulong requestId)
     {
-        return await dataContext.ApprovalRequests
+        var singleOrDefault = await dataContext.ApprovalRequests
             .Include(p=>p.Approver)
             .Include(p=>p.LeaveRequest)
             .ThenInclude(p=>p.Employee)
             .SingleOrDefaultAsync(p => p.Id == requestId);
+
+        if (singleOrDefault == null) 
+            return new ApprovalRequestNotFound($"Approval request with id `{requestId}` not found");
+        return singleOrDefault;
     }
 
     public async Task<ApprovalRequest[]> GetApprovalRequstsAsync()
@@ -30,20 +35,18 @@ public class DbApprovalRequestRepository(DataContext dataContext) : IApprovalReq
 
     public async Task<ApprovalRequest> AddApprovalRequestAsync(ApprovalRequest request)
     {
-        var result = new ApprovalRequest(request);
-
-        await dataContext.ApprovalRequests.AddAsync(result);
+        await dataContext.ApprovalRequests.AddAsync(request);
         await dataContext.SaveChangesAsync();
 
-        return result;
+        return request;
     }
 
-    public async Task<ApprovalRequest> UpdateApprovalRequestAsync(ulong requestId, Action<ApprovalRequest> update)
+    public async Task<Result<ApprovalRequest>> UpdateApprovalRequestAsync(ulong requestId, Action<ApprovalRequest> update)
     {
-        var request = await GetApprovalRequestAsync(requestId) ??
-                      throw new ApprovalRequestNotFound($"Approval request with id {requestId} doesnt exists");
+        var request = await GetApprovalRequestAsync(requestId);
+        if (request.IsFailed) return request;
 
-        update(request);
+        update(request.Value);
         await dataContext.SaveChangesAsync();
 
         return request;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OutOfOffice.Core.Exceptions.NotFound;
 using OutOfOffice.Core.Models;
 using OutOfOffice.Core.Models.Enums;
 using OutOfOffice.Core.Requests;
@@ -31,29 +32,36 @@ public class LeaveRequestsController(
     [HttpGet, Route("get/{id}")]
     public async Task<ActionResult<LeaveRequest>> GetLeaveRequest([FromRoute] ulong id)
     {
-        var leaveRequest = await leaveRequestRepository.GetLeaveRequestAsync(id);
+        var leaveRequestResult = await leaveRequestRepository.GetLeaveRequestAsync(id);
 
-        if (leaveRequest is null) return NotFound($"Leave request with id {id} not found!");
+        return leaveRequestResult.Match<ActionResult<LeaveRequest>>(request =>
+        {
+            var userId = User.Claims.GetUserId();
+            var role = User.Claims.GetUserRole();
 
-        var userId = User.Claims.GetUserId();
-        var role = User.Claims.GetUserRole();
+            if (role is Policies.EmployeePolicy && request.Employee.Id != userId)
+                return Forbid();
 
-        if (role is Policies.EmployeePolicy && leaveRequest.Employee.Id != userId)
-            return Forbid("You are not allowed to get this");
+            return request;
+        }, exception =>
+        {
+            if (exception is LeaveRequestNotFound)
+                return NotFound(exception.Message);
 
-        return leaveRequest;
+            throw exception;
+        });
+
     }
 
     [HttpPost, Route("add")]
-    public async Task<IActionResult> AddNewLeaveRequest([FromBody] NewLeaveRequest request)
+    public async Task<ActionResult<LeaveRequest>> AddNewLeaveRequest([FromBody] NewLeaveRequest request)
     {
         var userId = User.Claims.GetUserId();
         await using var transaction = await dbUnitOfWork.BeginTransactionAsync();
 
-        try
+        var employeeResult = await employeeRepository.GetEmployeeAsync(userId);
+        return await employeeResult.Match<Task<ActionResult<LeaveRequest>>>(async employee =>
         {
-            var employee = await employeeRepository.GetEmployeeAsync(userId);
-            if (employee is null) return NotFound($"Employee with {userId} id not found!");
             var leaveRequest = new LeaveRequest
             {
                 AbsenceReason = request.Reason,
@@ -64,14 +72,17 @@ public class LeaveRequestsController(
                 Status = RequestStatus.New
             };
             await leaveRequestRepository.AddLeaveRequestAsync(leaveRequest);
-
             await transaction.CommitAsync();
-            return Ok(leaveRequest);
-        }
-        catch
+
+            return leaveRequest;
+        }, async exception =>
         {
             await transaction.RollbackAsync();
-            throw;
-        }
+
+            if (exception is LeaveRequestNotFound)
+                return NotFound(exception.Message);
+
+            throw exception;
+        });
     }
 }

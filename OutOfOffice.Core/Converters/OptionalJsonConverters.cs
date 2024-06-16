@@ -1,7 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
+using OutOfOffice.Core.Utilities;
 
-namespace OutOfOffice.Core.Utilities;
+namespace OutOfOffice.Core.Converters;
 
 
 public class OptionalJsonConverter<T> : JsonConverter<Optional<T>>

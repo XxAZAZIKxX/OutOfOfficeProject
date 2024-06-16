@@ -1,0 +1,36 @@
+version: '3.4'
+
+services:
+  outofoffice.server:
+    image: ${DOCKER_REGISTRY-}outofofficeserver
+    build:
+      context: .
+      dockerfile: OutOfOffice.Server/Dockerfile
+    depends_on:
+    - redis
+    - mariadb
+    ports:
+    - "8080:8080"
+    - "8081:8081"
+
+  mariadb:
+    image: mariadb
+    restart: always
+    ports:
+    - "3307:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+    - "mariadb_data:/var/lib/mysql"
+
+  redis:
+    image: redis
+    restart: always
+    volumes:
+    - "redis_data:/data"
+    ports:
+    - "6379:6379"
+
+volumes:
+  mariadb_data:
+  redis_data:

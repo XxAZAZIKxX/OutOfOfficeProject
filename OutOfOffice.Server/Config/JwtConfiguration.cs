@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using OutOfOffice.Server.Core.Extensions;
 
 namespace OutOfOffice.Server.Config;
 
@@ -40,23 +41,19 @@ public class JwtConfiguration : BaseConfiguration
 
     public JwtConfiguration(IConfiguration configuration)
     {
-        var section = configuration.GetRequiredSection("Jwt");
-        Issuer = section.GetRequiredSection("Issuer").Get<string?>() ?? throw GetSimpleMissingException("Issuer");
+        var section = configuration.GetSectionOrThrow("Jwt");
+        Issuer = section.GetOrThrow<string>("Issuer");
 
-        var secretString = section.GetRequiredSection("Secret").Get<string?>()
-                           ?? throw GetSimpleMissingException("Secret");
+        var secretString = section.GetOrThrow<string>("Secret");
         _secret = Encoding.UTF8.GetBytes(secretString);
 
-        var tokenLifetimeNumber = section.GetRequiredSection("TokenLifetime").Get<ulong?>()
-                                  ?? throw GetSimpleMissingException("TokenLifetime");
+        var tokenLifetimeNumber = section.GetOrThrow<ulong>("TokenLifetime");
         TokenLifetime = TimeSpan.FromSeconds(tokenLifetimeNumber);
 
-        Audiences = section.GetRequiredSection("Audiences").Get<string[]?>()
-                    ?? throw GetSimpleMissingException("Audiences");
+        Audiences = section.GetOrThrow<string[]>("Audiences");
         if (Audiences.Length == 0) throw new Exception(@"""Audiences"" array must contains more than 0 elements!");
 
-        var refreshTokenLifetimeNumber
-            = section.GetRequiredSection("RefreshLifetime").Get<ulong?>() ?? throw GetSimpleMissingException("RefreshLifetime");
+        var refreshTokenLifetimeNumber = section.GetOrThrow<ulong>("RefreshLifetime");
         RefreshTokenLifetime = TimeSpan.FromSeconds(refreshTokenLifetimeNumber);
     }
 

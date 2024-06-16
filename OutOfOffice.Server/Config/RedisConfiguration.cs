@@ -1,17 +1,17 @@
-﻿using StackExchange.Redis;
+﻿using OutOfOffice.Server.Core.Extensions;
+using StackExchange.Redis;
 
 namespace OutOfOffice.Server.Config;
 
-public class RedisConfiguration : BaseConfiguration
+public class RedisConfiguration
 {
     public EndPointCollection EndPoints { get; } = new();
 
     public RedisConfiguration(IConfiguration configuration)
     {
-        var section = configuration.GetRequiredSection("Redis");
+        var section = configuration.GetSectionOrThrow("Redis");
 
-        var endpoints = section.GetRequiredSection("EndPoints").Get<string[]?>() ??
-                    throw GetSimpleMissingException("EndPoints");
+        var endpoints = section.GetOrThrow<string[]>("EndPoints");
 
         foreach (var endpoint in endpoints) EndPoints.Add(endpoint);
     }

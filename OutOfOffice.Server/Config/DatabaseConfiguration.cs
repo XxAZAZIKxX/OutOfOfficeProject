@@ -1,8 +1,9 @@
 ﻿using MySqlConnector;
+using OutOfOffice.Server.Core.Extensions;
 
 namespace OutOfOffice.Server.Config;
 
-public class DatabaseConfiguration : BaseConfiguration
+public class DatabaseConfiguration
 {
     public string Server { get; }
     public string User { get; }
@@ -10,11 +11,12 @@ public class DatabaseConfiguration : BaseConfiguration
     public string DatabaseName { get; }
     public DatabaseConfiguration(IConfiguration configuration)
     {
-        var section = configuration.GetRequiredSection("Database");
-        Server = section.GetRequiredSection("Server").Get<string?>() ?? throw GetSimpleMissingException("Server");
-        User = section.GetRequiredSection("User").Get<string?>() ?? throw GetSimpleMissingException("User");
-        Password = section.GetRequiredSection("Password").Get<string?>() ?? throw GetSimpleMissingException("Password");
-        DatabaseName = section.GetRequiredSection("DatabaseName").Get<string?>() ?? throw GetSimpleMissingException("DatabaseName");
+        var section = configuration.GetSectionOrThrow("Database");
+
+        Server = section.GetOrThrow<string>("Server");
+        User = section.GetOrThrow<string>("User");
+        Password = section.GetOrThrow<string>("Password");
+        DatabaseName = section.GetOrThrow<string>("DatabaseName");
     }
 
     public string GetConnectionString()

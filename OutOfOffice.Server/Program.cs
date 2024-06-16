@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddProblemDetails();
 
 // Configuration
-builder.Configuration.AddJsonFile("appsettings.secret.json", optional: false);
+builder.Configuration.AddJsonFile("appsettings.secret.json", optional:true);
 
 builder.Services.AddSingleton<JwtConfiguration>();
 builder.Services.AddSingleton<DatabaseConfiguration>();

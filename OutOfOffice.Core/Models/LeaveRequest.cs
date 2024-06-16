@@ -1,30 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using OutOfOffice.Core.Models.Enums;
+﻿using OutOfOffice.Core.Models.Enums;
 
 namespace OutOfOffice.Core.Models;
 
 public class LeaveRequest
 {
-    [Key] public ulong Id { get; set; }
-    [Column] public Employee Employee { get; set; }
-    [Column] public AbsenceReason AbsenceReason { get; set; }
-    [Column] public DateTimeOffset StartDate { get; set; }
-    [Column] public DateTimeOffset EndDate { get; set; }
-    [Column] public string? Comment { get; set; }
-    [Column] public RequestStatus Status { get; set; } = RequestStatus.New;
-
-    public LeaveRequest() { }
-
-    public LeaveRequest(LeaveRequest other) 
-    {
-        Id = other.Id;
-        Employee = other.Employee;
-        AbsenceReason = other.AbsenceReason;
-        StartDate = other.StartDate;
-        EndDate = other.EndDate;
-        Comment = other.Comment;
-        Status = other.Status;
-    }
-
+    public ulong Id { get; set; }
+    public Employee Employee { get; set; }
+    public ulong EmployeeId { get; set; }
+    public AbsenceReason AbsenceReason { get; set; }
+    public DateTimeOffset StartDate { get; set; }
+    public DateTimeOffset EndDate { get; set; }
+    public string? Comment { get; set; }
+    public RequestStatus Status { get; set; }
 }

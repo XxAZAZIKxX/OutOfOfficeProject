@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using OutOfOffice.Core.Models;
 
-namespace OutOfOffice.Core.Models;
+namespace OutOfOffice.Server.Data.Models;
 
 [Index(nameof(ProjectId), nameof(EmployeeId), IsUnique = true)]
 public class ProjectMember

@@ -1,25 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using OutOfOffice.Core.Models.Enums;
+﻿using OutOfOffice.Core.Models.Enums;
 
 namespace OutOfOffice.Core.Models;
 
 public class ApprovalRequest
 {
-    [Key] public ulong Id { get; set; }
-    [Column] public Employee Approver { get; set; }
-    [Column] public LeaveRequest LeaveRequest { get; set; }
-    [Column] public RequestStatus Status { get; set; }
-    [Column] public string? Comment { get; set; }
-
-    public ApprovalRequest() { }
-
-    public ApprovalRequest(ApprovalRequest other)
-    {
-        Id = other.Id;
-        Approver = other.Approver;
-        LeaveRequest = other.LeaveRequest;
-        Status = other.Status;
-        Comment = other.Comment;
-    }
+    public ulong Id { get; set; }
+    public Employee Approver { get; set; }
+    public ulong ApproverId { get; set; }
+    public LeaveRequest LeaveRequest { get; set; }
+    public ulong LeaveRequestId { get; set; }
+    public RequestStatus Status { get; set; }
+    public string? Comment { get; set; }
 }

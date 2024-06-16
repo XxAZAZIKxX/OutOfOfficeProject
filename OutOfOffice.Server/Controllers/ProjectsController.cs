@@ -46,7 +46,7 @@ public class ProjectsController(
             Comment = projectRequest.Comment,
             Status = projectRequest.Status
         });
-
+                Status = ProjectStatus.Active
         return Ok(newProject);
     }
 

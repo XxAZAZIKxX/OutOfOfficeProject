@@ -19,7 +19,7 @@ public static class ConfigurationExtension
 
     public static TValue GetOrThrow<TValue>(this IConfigurationSection section)
     {
-        var value = section.Get<TValue>();
+        var value = section.Get<TValue?>();
         if (value is not null) return value;
 
         throw new ConfigurationMissingException($"Value for `{section.Path}` is missing in configuration section");

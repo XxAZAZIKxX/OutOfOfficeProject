@@ -23,7 +23,7 @@ public readonly struct Optional<T>
     {
         if (obj is not Optional<T> other) return false;
 
-        return _value!.Equals(obj) || EqualityComparer<T>.Default.Equals(_value, other._value);
+        return _value?.Equals(obj) ?? EqualityComparer<T>.Default.Equals(_value, other._value);
     }
 
     public static bool operator ==(Optional<T> left, Optional<T> right) => left.Equals(right);

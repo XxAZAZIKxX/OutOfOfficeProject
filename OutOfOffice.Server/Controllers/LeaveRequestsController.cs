@@ -19,7 +19,7 @@ public class LeaveRequestsController(
     IEmployeeRepository employeeRepository
     ) : ControllerBase
 {
-    [HttpGet, Route("get")]
+    [HttpGet, Route("all")]
     public async Task<ActionResult<LeaveRequest[]>> GetLeaveRequests()
     {
         if (User.Claims.GetUserRole() == Policies.EmployeePolicy)
@@ -29,10 +29,10 @@ public class LeaveRequestsController(
         return await leaveRequestRepository.GetLeaveRequestsAsync();
     }
 
-    [HttpGet, Route("get/{id}")]
-    public async Task<ActionResult<LeaveRequest>> GetLeaveRequest([FromRoute] ulong id)
+    [HttpGet, Route("{projectId}")]
+    public async Task<ActionResult<LeaveRequest>> GetLeaveRequest([FromRoute] ulong projectId)
     {
-        var leaveRequestResult = await leaveRequestRepository.GetLeaveRequestAsync(id);
+        var leaveRequestResult = await leaveRequestRepository.GetLeaveRequestAsync(projectId);
 
         return leaveRequestResult.Match<ActionResult<LeaveRequest>>(request =>
         {
@@ -79,7 +79,7 @@ public class LeaveRequestsController(
         {
             await transaction.RollbackAsync();
 
-            if (exception is LeaveRequestNotFound)
+            if (exception is EmployeeNotFoundException)
                 return NotFound(exception.Message);
 
             throw exception;

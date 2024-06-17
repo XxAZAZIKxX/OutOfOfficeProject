@@ -10,6 +10,7 @@ public interface IRefreshTokenRepository
     /// <param name="tokenLifetime">The time the token will live in repository</param>
     /// <returns></returns>
     Task SetRefreshTokenAsync(ulong userId, string refreshToken, TimeSpan tokenLifetime);
+
     /// <summary>
     /// Validated refresh token of user
     /// </summary>

@@ -31,8 +31,13 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
             .ToArrayAsync();
     }
 
-    public async Task<Project[]> GetProjectsWithEmployeeAsync(ulong employeeId)
+    public async Task<Result<Project[]>> GetProjectsWithEmployeeAsync(ulong employeeId)
     {
+        var anyEmployee = await dataContext.Employees.AnyAsync(p => p.Id == employeeId);
+
+        if (anyEmployee is false)
+            return new EmployeeNotFoundException($"Employee with id `{employeeId}` not found!");
+
         return await dataContext.ProjectMembers
             .AsNoTracking()
             .Include(p => p.Project)
@@ -95,6 +100,24 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
         }, exception => Task.FromResult<Result<bool>>(exception));
     }
 
+    public async Task<Result<Employee[]>> GetProjectMembersAsync(ulong projectId)
+    {
+        var any = await dataContext.Projects.AnyAsync(p => p.Id == projectId);
+        if (any is false)
+            return new ProjectNotFoundException($"Project with id `{projectId}` not found!");
+
+        return await dataContext.ProjectMembers
+            .AsNoTracking()
+            .Include(p => p.Employee)
+            .ThenInclude(p => p.PeoplePartner)
+            .Where(p => p.ProjectId == projectId)
+            .Select(p=>p.Employee)
+            .ToArrayAsync();
+    }
+
+
+    #region PrivateMethods
+    
     private async Task<Result<bool>> IsEmployeeMemberOfProjectAsync(ulong projectId, ulong employeeId)
     {
         var isProjectExists = await dataContext.Projects.AnyAsync(p => p.Id == projectId);
@@ -109,4 +132,6 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
                                                                       p.ProjectId == projectId);
         return anyAsync;
     }
+
+    #endregion
 }

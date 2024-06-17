@@ -16,16 +16,16 @@ public class ProjectsController(
         IEmployeeRepository employeeRepository
         ) : ControllerBase
 {
-    [HttpGet, Route("get"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
-    public async Task<IActionResult> GetAllProjects()
+    [HttpGet, Route("all"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
+    public async Task<ActionResult<Project[]>> GetAllProjects()
     {
-        return Ok(await projectRepository.GetProjectsAsync());
+        return await projectRepository.GetProjectsAsync();
     }
 
-    [HttpGet, Route("get/{id}"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
-    public async Task<ActionResult<Project>> GetProject([FromRoute] ulong id)
+    [HttpGet, Route("{projectId}"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
+    public async Task<ActionResult<Project>> GetProject([FromRoute] ulong projectId)
     {
-        var projectResult = await projectRepository.GetProjectAsync(id);
+        var projectResult = await projectRepository.GetProjectAsync(projectId);
         return projectResult.Match<ActionResult<Project>>(project => project,
             exception =>
             {
@@ -57,9 +57,9 @@ public class ProjectsController(
         }, exception => throw new InvalidOperationException("Logged user is not exists", exception));
     }
 
-    [HttpPost, Route("update")]
+    [HttpPost, Route("{projectId}/update")]
     public async Task<ActionResult<Project>> UpdateProject(
-        [FromQuery] ulong projectId, [FromBody] UpdateProjectRequest updateProjectRequest)
+        [FromRoute] ulong projectId, [FromBody] UpdateProjectRequest updateProjectRequest)
     {
         var result = await projectRepository.UpdateProjectAsync(projectId, project =>
         {
@@ -76,16 +76,14 @@ public class ProjectsController(
         return result.Match<ActionResult<Project>>(project => project, exception =>
         {
             if (exception is ProjectNotFoundException)
-            {
                 return NotFound(exception.Message);
-            }
 
             throw exception;
         });
     }
 
-    [HttpPost, Route("close")]
-    public async Task<ActionResult<Project>> CloseProject([FromQuery] ulong projectId)
+    [HttpPost, Route("{projectId}/close")]
+    public async Task<ActionResult<Project>> CloseProject([FromRoute] ulong projectId)
     {
         var projectResult = await projectRepository.UpdateProjectAsync(projectId, project =>
         {
@@ -102,32 +100,55 @@ public class ProjectsController(
         });
     }
 
-    [HttpPost, Route("members/add")]
-    public async Task<IActionResult> AddNewProjectMember([FromQuery] ulong projectId, [FromQuery] ulong employeeId)
+    [HttpGet, Route("{projectId}/members")]
+    public async Task<ActionResult<Employee[]>> GetProjectMembers([FromRoute] ulong projectId)
+    {
+        var employeesResult = await projectRepository.GetProjectMembersAsync(projectId);
+        return employeesResult.Match<ActionResult<Employee[]>>(employees => employees,
+            exception =>
+            {
+                if (exception is ProjectNotFoundException)
+                    return NotFound(exception.Message);
+
+                throw exception;
+            });
+    }
+
+    [HttpPost, Route("{projectId}/members/add")]
+    public async Task<ActionResult<Employee[]>> AddNewProjectMember([FromRoute] ulong projectId, 
+        [FromQuery] ulong employeeId)
     {
         var result = await projectRepository.AddNewEmployeeToProjectAsync(projectId, employeeId);
-        return result.Match<IActionResult>(b => Ok(b ? "User was added!" : "User was already added!"), exception =>
+        return await result.Match<Task<ActionResult<Employee[]>>>(async _ =>
+        {
+            var employeesResult = await projectRepository.GetProjectMembersAsync(projectId);
+            if (employeesResult.IsFailed) throw employeesResult.Exception;
+            return employeesResult.Value;
+        }, exception =>
         {
             if (exception is ProjectNotFoundException or EmployeeNotFoundException)
-            {
-                return NotFound(exception.Message);
-            }
+                return Task.FromResult<ActionResult<Employee[]>>(NotFound(exception.Message));
 
             throw exception;
         });
     }
 
-    [HttpPost, Route("members/remove")]
-    public async Task<IActionResult> RemoveProjectMember([FromQuery] ulong projectId, [FromQuery] ulong employeeId)
+    [HttpPost, Route("{projectId}/members/remove")]
+    public async Task<ActionResult<Employee[]>> RemoveProjectMember([FromRoute] ulong projectId,
+        [FromQuery] ulong employeeId)
     {
         var result = await projectRepository.RemoveEmployeeFromProjectAsync(projectId, employeeId);
-        return result.Match<IActionResult>(b => Ok(b ? "Member was removed!" : "Member was already removed!"),
-            exception =>
-            {
-                if (exception is ProjectNotFoundException or EmployeeNotFoundException)
-                    return NotFound(exception.Message);
+        return await result.Match<Task<ActionResult<Employee[]>>>(async _ =>
+        {
+            var employeesResult = await projectRepository.GetProjectMembersAsync(projectId);
+            if (employeesResult.IsFailed) throw employeesResult.Exception;
+            return employeesResult.Value;
+        }, exception =>
+        {
+            if (exception is ProjectNotFoundException or EmployeeNotFoundException)
+                return Task.FromResult<ActionResult<Employee[]>>(NotFound(exception.Message));
 
-                throw exception;
-            });
+            throw exception;
+        });
     }
 }

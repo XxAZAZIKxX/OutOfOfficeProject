@@ -16,6 +16,7 @@ public interface IEmployeeRepository
     /// </returns>
     /// <exception cref="EmployeeNotFoundException"></exception>
     Task<Result<Employee>> GetEmployeeAsync(ulong employeeId);
+
     /// <summary>
     /// Get all employees from the repository
     /// </summary>

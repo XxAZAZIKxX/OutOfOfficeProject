@@ -11,22 +11,24 @@ public interface ILeaveRequestRepository
     /// </summary>
     /// <param name="requestId">The id of the leave request</param>
     /// <returns>
-    /// The <see cref="LeaveRequest"/> if exists;
-    /// otherwise <see langword="null"/>
+    /// The <see cref="LeaveRequest"/> if exists
     /// </returns>
     /// <exception cref="LeaveRequestNotFound"></exception>
     Task<Result<LeaveRequest>> GetLeaveRequestAsync(ulong requestId);
+
     /// <summary>
     /// Get all leave requests from repository
     /// </summary>
     /// <returns>An array of <see cref="LeaveRequest"/></returns>
     Task<LeaveRequest[]> GetLeaveRequestsAsync();
+
     /// <summary>
     /// Get all leave requests from repository created by the specified employee
     /// </summary>
     /// <param name="employeeId">The id of the employee who created the leave requests</param>
     /// <returns>An array of <see cref="LeaveRequest"/></returns>
     Task<LeaveRequest[]> GetLeaveRequestsOfEmployeeAsync(ulong employeeId);
+
     /// <summary>
     /// Update specified leave request
     /// </summary>
@@ -35,6 +37,7 @@ public interface ILeaveRequestRepository
     /// <returns>Updated leave request</returns>
     /// <exception cref="LeaveRequestNotFound"></exception>
     Task<Result<LeaveRequest>> UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update);
+
     /// <summary>
     /// Add new leave request to the repository
     /// </summary>

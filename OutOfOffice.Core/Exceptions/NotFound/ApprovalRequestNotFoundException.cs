@@ -2,4 +2,4 @@
 
 namespace OutOfOffice.Core.Exceptions.NotFound;
 
-public class ProjectNotFoundException(string message) : BaseNotFoundException(message);
+public class ApprovalRequestNotFoundException(string message) : BaseNotFoundException(message);

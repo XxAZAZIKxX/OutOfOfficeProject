@@ -1,3 +1,5 @@
-﻿namespace OutOfOffice.Core.Exceptions.NotFound;
+﻿using OutOfOffice.Core.Exceptions.NotFound.Base;
 
-public class EmployeeNotFoundException(string message) : Exception(message);
+namespace OutOfOffice.Core.Exceptions.NotFound;
+
+public class EmployeeNotFoundException(string message) : BaseNotFoundException(message);

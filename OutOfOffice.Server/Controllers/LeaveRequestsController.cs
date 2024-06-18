@@ -78,11 +78,36 @@ public sealed class LeaveRequestsController(
         }, async exception =>
         {
             await transaction.RollbackAsync();
+    [HttpPost, Route("{requestId}/update")]
+    public async Task<ActionResult<LeaveRequest>> UpdateLeaveRequest([FromRoute] ulong requestId,
+        [FromBody] UpdateLeaveRequest updateLeaveRequest)
+    {
+        var userId = User.Claims.GetUserId();
 
-            if (exception is EmployeeNotFoundException)
-                return NotFound(exception.Message);
+        var leaveRequstResult = await leaveRequestRepository.GetLeaveRequestAsync(requestId);
+        if (leaveRequstResult.IsFailed) return await exceptionHandlingService.HandleExceptionAsync(leaveRequstResult.Exception);
+        var leaveRequest = leaveRequstResult.Value;
+        if (leaveRequest.EmployeeId != userId) return Forbid();
+        if (leaveRequest.Status != RequestStatus.New)
+            return BadRequest("You can only update leave requests with a `New` status.");
 
-            throw exception;
+
+        var result = await leaveRequestRepository.UpdateLeaveRequestAsync(requestId, request =>
+        {
+            if (updateLeaveRequest.AbsenceReason.HasValue)
+                request.AbsenceReason = updateLeaveRequest.AbsenceReason.Value;
+
+            if (updateLeaveRequest.StartDate.HasValue)
+                request.StartDate = updateLeaveRequest.StartDate.Value;
+
+            if (updateLeaveRequest.EndDate.HasValue)
+                request.EndDate = updateLeaveRequest.EndDate.Value;
+
+            if (updateLeaveRequest.Comment.HasValue)
+                request.Comment = updateLeaveRequest.Comment.Value;
         });
+
+        return result.Match(request => request, exceptionHandlingService.HandleException<LeaveRequest>);
+    }
     }
 }

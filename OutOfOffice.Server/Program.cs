@@ -9,6 +9,9 @@ using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Data;
 using OutOfOffice.Server.Repositories;
 using OutOfOffice.Server.Repositories.Implementation;
+using OutOfOffice.Server.Services;
+using OutOfOffice.Server.Services.Implementation;
+using OutOfOffice.Server.Services.Implementation.NonInterfaceImpl;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,6 +61,7 @@ builder.Services.AddScoped<ILeaveRequestRepository, DbLeaveRequestRepository>();
 builder.Services.AddScoped<IEmployeeRepository, DbEmployeeRepository>();
 builder.Services.AddScoped<IApprovalRequestRepository, DbApprovalRequestRepository>();
 builder.Services.AddScoped<IProjectRepository, DbProjectRepository>();
+builder.Services.AddScoped<IPossibleApproverRepository, DbPossibleApproverRepository>();
 
 // Authentification
 

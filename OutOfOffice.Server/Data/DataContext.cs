@@ -14,6 +14,7 @@ public sealed class DataContext : DbContext
     
     public DbSet<AuthCredential> AuthCredentials { get; set; }
     public DbSet<ProjectMember> ProjectMembers { get; set; }
+    public DbSet<PossibleApprover> PossibleApprovers { get; set; }
 
     public DataContext(DbContextOptions<DataContext> options) : base(options)
     {
@@ -38,6 +39,7 @@ public sealed class DataContext : DbContext
         {
             builder.HasKey(p => p.Id);
             builder.HasOne(p => p.LeaveRequest).WithMany().HasForeignKey(p => p.LeaveRequestId);
+            builder.HasIndex(p => p.LeaveRequestId).IsUnique();
             builder.HasOne(p => p.Approver).WithMany().HasForeignKey(p => p.ApproverId);
         });
         modelBuilder.Entity<Project>(builder =>

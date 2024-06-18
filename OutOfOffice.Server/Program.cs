@@ -43,6 +43,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
     return ConnectionMultiplexer.Connect(options);
 });
 
+// Services
+
+builder.Services.AddSingleton<ExceptionHandlingService>();
+
 // Repositories
 
 builder.Services.AddScoped<DbUnitOfWork>();
@@ -69,13 +73,17 @@ builder.Services.AddAuthorization(options =>
         .RequireRole(Policies.EmployeePolicy, Policies.HrManagerPolicy,
             Policies.ProjectManagerPolicy, Policies.AdministratorPolicy));
     // Hr manager
-    options.AddPolicy(Policies.HrManagerPolicy, policy => policy.RequireRole(Policies.HrManagerPolicy, Policies.AdministratorPolicy));
+    options.AddPolicy(Policies.HrManagerPolicy,
+        policy => policy.RequireRole(Policies.HrManagerPolicy, Policies.AdministratorPolicy));
     // Project manager
-    options.AddPolicy(Policies.ProjectManagerPolicy, policy => policy.RequireRole(Policies.ProjectManagerPolicy, Policies.AdministratorPolicy));
+    options.AddPolicy(Policies.ProjectManagerPolicy,
+        policy => policy.RequireRole(Policies.ProjectManagerPolicy, Policies.AdministratorPolicy));
     // Administrator
     options.AddPolicy(Policies.AdministratorPolicy, policy => policy.RequireRole(Policies.AdministratorPolicy));
     // Hr and project manager
-    options.AddPolicy(Policies.HrAndProjectManagerPolicy, policy => policy.RequireRole(Policies.HrManagerPolicy, Policies.ProjectManagerPolicy, Policies.AdministratorPolicy));
+    options.AddPolicy(Policies.HrAndProjectManagerPolicy,
+        policy => policy.RequireRole(Policies.HrManagerPolicy, Policies.ProjectManagerPolicy,
+            Policies.AdministratorPolicy));
 });
 
 // Add services to the container.

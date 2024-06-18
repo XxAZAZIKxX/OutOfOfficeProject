@@ -13,7 +13,7 @@ namespace OutOfOffice.Server.Controllers;
 [ApiController, Route("[controller]"), Authorize(Policy = Policies.ProjectManagerPolicy)]
 public sealed class ProjectsController(
         IProjectRepository projectRepository,
-        IEmployeeRepository employeeRepository
+        ExceptionHandlingService exceptionHandlingService
         ) : ControllerBase
 {
     [HttpGet, Route("all"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]

@@ -17,6 +17,7 @@ public sealed class LeaveRequestsController(
     ILeaveRequestRepository leaveRequestRepository,
     IApprovalRequestRepository approvalRequestRepository,
     IEmployeeRepository employeeRepository
+    ExceptionHandlingService exceptionHandlingService
     ) : ControllerBase
 {
     [HttpGet, Route("all")]
@@ -43,10 +44,7 @@ public sealed class LeaveRequestsController(
                 return Forbid();
 
             return request;
-        }, exception =>
-        {
-            if (exception is LeaveRequestNotFound)
-                return NotFound(exception.Message);
+        }, exceptionHandlingService.HandleException<LeaveRequest>);
 
             throw exception;
         });
@@ -59,8 +57,7 @@ public sealed class LeaveRequestsController(
         var userId = User.Claims.GetUserId();
         await using var transaction = await dbUnitOfWork.BeginTransactionAsync();
 
-        var employeeResult = await employeeRepository.GetEmployeeAsync(userId);
-        return await employeeResult.Match<Task<ActionResult<LeaveRequest>>>(async employee =>
+        try
         {
             var leaveRequest = new LeaveRequest
             {
@@ -72,12 +69,21 @@ public sealed class LeaveRequestsController(
                 Status = RequestStatus.New
             };
             await leaveRequestRepository.AddLeaveRequestAsync(leaveRequest);
+
+            var result = await approvalRequestService.AddApprovalRequestAsync(leaveRequest.Id);
+            if (result.IsFailed) throw result.Exception;
+
             await transaction.CommitAsync();
 
             return leaveRequest;
-        }, async exception =>
+        }
+        catch(Exception e)
         {
             await transaction.RollbackAsync();
+            return await exceptionHandlingService.HandleExceptionAsync(e);
+        }
+    }
+
     [HttpPost, Route("{requestId}/update")]
     public async Task<ActionResult<LeaveRequest>> UpdateLeaveRequest([FromRoute] ulong requestId,
         [FromBody] UpdateLeaveRequest updateLeaveRequest)

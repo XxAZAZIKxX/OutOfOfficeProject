@@ -22,4 +22,13 @@ public interface IEmployeeRepository
     /// </summary>
     /// <returns>Array of <see cref="Employee"/></returns>
     Task<Employee[]> GetEmployeesAsync();
+
+    /// <summary>
+    /// Updates the specified employee
+    /// </summary>
+    /// <param name="employeeId">ID of the employee</param>
+    /// <param name="update">Action to be performed on the employee</param>
+    /// <returns></returns>
+    /// <exception cref="EmployeeNotFoundException"></exception>
+    Task<Result<Employee>> UpdateEmployeeAsync(ulong employeeId, Action<Employee> update);
 }

@@ -9,7 +9,7 @@ namespace OutOfOffice.Server.Repositories.Implementation;
 /// <summary>
 /// Implementation of <see cref="IEmployeeRepository"/> which uses <see cref="DataContext"/>
 /// </summary>
-public class DbEmployeeRepository(DataContext dataContext) : IEmployeeRepository
+public sealed class DbEmployeeRepository(DataContext dataContext) : IEmployeeRepository
 {
     public async Task<Result<Employee>> GetEmployeeAsync(ulong employeeId)
     {
@@ -26,5 +26,18 @@ public class DbEmployeeRepository(DataContext dataContext) : IEmployeeRepository
     public async Task<Employee[]> GetEmployeesAsync()
     {
         return await dataContext.Employees.AsNoTracking().ToArrayAsync();
+    }
+
+    public async Task<Result<Employee>> UpdateEmployeeAsync(ulong employeeId, Action<Employee> update)
+    {
+        var employeeResult = await GetEmployeeAsync(employeeId);
+        if (employeeResult.IsFailed) return employeeResult.Exception;
+
+        var employee = employeeResult.Value;
+        update(employee);
+
+        await dataContext.SaveChangesAsync();
+
+        return employee;
     }
 }

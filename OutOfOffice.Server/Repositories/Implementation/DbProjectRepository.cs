@@ -10,7 +10,7 @@ namespace OutOfOffice.Server.Repositories.Implementation;
 /// <summary>
 /// Implementation of <see cref="IProjectRepository"/> which using <see cref="DataContext"/>
 /// </summary>
-public class DbProjectRepository(DataContext dataContext) : IProjectRepository
+public sealed class DbProjectRepository(DataContext dataContext) : IProjectRepository
 {
     public async Task<Result<Project>> GetProjectAsync(ulong projectId)
     {
@@ -39,7 +39,6 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
             return new EmployeeNotFoundException($"Employee with id `{employeeId}` not found!");
 
         return await dataContext.ProjectMembers
-            .AsNoTracking()
             .Include(p => p.Project)
             .ThenInclude(p => p.ProjectManager)
             .Where(p => p.EmployeeId == employeeId)
@@ -126,7 +125,7 @@ public class DbProjectRepository(DataContext dataContext) : IProjectRepository
 
         var isEmployeeExists = await dataContext.Employees.AnyAsync(p => p.Id == employeeId);
         if (isEmployeeExists is false)
-            return new EmployeeNotFoundException($"Employee with id `{projectId}` not found!");
+            return new EmployeeNotFoundException($"Employee with id `{employeeId}` not found!");
 
         var anyAsync = await dataContext.ProjectMembers.AnyAsync(p => p.EmployeeId == employeeId &&
                                                                       p.ProjectId == projectId);

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OutOfOffice.Core.Models;
-using OutOfOffice.Core.Requests;
 using OutOfOffice.Server.Data;
 
 namespace OutOfOffice.Server.Repositories.Implementation;
@@ -8,7 +7,7 @@ namespace OutOfOffice.Server.Repositories.Implementation;
 /// <summary>
 /// Implementation if <see cref="IAuthRepository"/> which uses <see cref="DataContext"/>
 /// </summary>
-public class DbAuthRepository(DataContext dataContext) : IAuthRepository
+public sealed class DbAuthRepository(DataContext dataContext) : IAuthRepository
 {
     public async Task<Employee?> IsUserCredentialsLegitAsync(string username, string passwordHash)
     {

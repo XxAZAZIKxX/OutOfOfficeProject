@@ -7,21 +7,36 @@ namespace OutOfOffice.Server.Repositories;
 public interface IApprovalRequestRepository
 {
     /// <summary>
+    /// Get all approval requests
+    /// </summary>
+    /// <returns>An array of approval request</returns>
+    Task<ApprovalRequest[]> GetApprovalRequestsAsync();
+
+    /// <summary>
     /// Get an approval request by its ID
     /// </summary>
-    /// <param name="requestId">The ID of the approval request to get</param>
+    /// <param name="approvalRequestId">The ID of the approval request to get</param>
     /// <returns>
     /// The <see cref="ApprovalRequest"/> if found;
     /// otherwise <see langword="null"/>
     /// </returns>
-    /// <exception cref="ApprovalRequestNotFound"></exception>
-    Task<Result<ApprovalRequest>> GetApprovalRequestAsync(ulong requestId);
+    /// <exception cref="ApprovalRequestNotFoundException"></exception>
+    Task<Result<ApprovalRequest>> GetApprovalRequestAsync(ulong approvalRequestId);
 
     /// <summary>
-    /// Get all approval requests
+    /// Get correspoding approval request to the spectified leave request
     /// </summary>
-    /// <returns>An array of approval request</returns>
-    Task<ApprovalRequest[]> GetApprovalRequstsAsync();
+    /// <param name="leaveRequestId">ID of the leave request</param>
+    /// <returns></returns>
+    /// <exception cref="ApprovalRequestNotFoundException"></exception>
+    Task<Result<ApprovalRequest>> GetApprovalRequestByLeaveRequestAsync(ulong leaveRequestId);
+
+    /// <summary>
+    /// Get the pending approval requests for the specified approver
+    /// </summary>
+    /// <param name="approverId">ID of the approver</param>
+    /// <returns></returns>
+    Task<ApprovalRequest[]> GetPendingApprovalRequestsAsync(ulong approverId);
 
     /// <summary>
     /// Adds a new approval request
@@ -36,6 +51,6 @@ public interface IApprovalRequestRepository
     /// <param name="requestId">The ID of the approval request to update</param>
     /// <param name="update">An action to perform on the approval request</param>
     /// <returns>The updated approval request</returns>
-    /// <exception cref="ApprovalRequestNotFound"></exception>
+    /// <exception cref="ApprovalRequestNotFoundException"></exception>
     Task<Result<ApprovalRequest>> UpdateApprovalRequestAsync(ulong requestId, Action<ApprovalRequest> update);
 }

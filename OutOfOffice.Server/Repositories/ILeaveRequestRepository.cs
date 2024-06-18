@@ -13,7 +13,7 @@ public interface ILeaveRequestRepository
     /// <returns>
     /// The <see cref="LeaveRequest"/> if exists
     /// </returns>
-    /// <exception cref="LeaveRequestNotFound"></exception>
+    /// <exception cref="LeaveRequestNotFoundException"></exception>
     Task<Result<LeaveRequest>> GetLeaveRequestAsync(ulong requestId);
 
     /// <summary>
@@ -35,7 +35,7 @@ public interface ILeaveRequestRepository
     /// <param name="leaveRequestId">The id of the leave request to be updated</param>
     /// <param name="update">Action to be performed on the leave request</param>
     /// <returns>Updated leave request</returns>
-    /// <exception cref="LeaveRequestNotFound"></exception>
+    /// <exception cref="LeaveRequestNotFoundException"></exception>
     Task<Result<LeaveRequest>> UpdateLeaveRequestAsync(ulong leaveRequestId, Action<LeaveRequest> update);
 
     /// <summary>

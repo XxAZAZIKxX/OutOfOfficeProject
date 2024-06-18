@@ -9,7 +9,7 @@ namespace OutOfOffice.Server.Repositories.Implementation;
 /// <summary>
 /// Implementation of <see cref="ILeaveRequestRepository"/> which using <see cref="DataContext"/>
 /// </summary>
-public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRepository
+public sealed class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRepository
 {
     public async Task<Result<LeaveRequest>> GetLeaveRequestAsync(ulong requestId)
     {
@@ -18,7 +18,7 @@ public class DbLeaveRequestRepository(DataContext dataContext) : ILeaveRequestRe
             .SingleOrDefaultAsync(p => p.Id == requestId);
 
         if (singleOrDefault is null)
-            return new LeaveRequestNotFound($"Leave request with id `{requestId}` not found!");
+            return new LeaveRequestNotFoundException($"Leave request with id `{requestId}` not found!");
 
         return singleOrDefault;
     }

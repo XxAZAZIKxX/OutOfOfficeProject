@@ -46,6 +46,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(provider =>
 // Services
 
 builder.Services.AddSingleton<ExceptionHandlingService>();
+builder.Services.AddScoped<IApprovalRequestService, ApprovalRequestService>();
 
 // Repositories
 

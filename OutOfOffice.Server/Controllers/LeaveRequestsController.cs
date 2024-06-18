@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OutOfOffice.Core.Exceptions.NotFound;
 using OutOfOffice.Core.Models;
 using OutOfOffice.Core.Models.Enums;
 using OutOfOffice.Core.Requests;
 using OutOfOffice.Server.Core;
 using OutOfOffice.Server.Core.Extensions;
+using OutOfOffice.Server.Data;
 using OutOfOffice.Server.Repositories;
-using OutOfOffice.Server.Repositories.Implementation;
+using OutOfOffice.Server.Services;
+using OutOfOffice.Server.Services.Implementation.NonInterfaceImpl;
 
 namespace OutOfOffice.Server.Controllers;
 
@@ -16,26 +17,30 @@ public sealed class LeaveRequestsController(
     DbUnitOfWork dbUnitOfWork,
     ILeaveRequestRepository leaveRequestRepository,
     IApprovalRequestRepository approvalRequestRepository,
-    IEmployeeRepository employeeRepository
+    IApprovalRequestService approvalRequestService,
     ExceptionHandlingService exceptionHandlingService
     ) : ControllerBase
 {
-    [HttpGet, Route("all")]
-    public async Task<ActionResult<LeaveRequest[]>> GetLeaveRequests()
+    [HttpGet, Route("all"), Authorize(Policy = Policies.HrAndProjectManagerPolicy)]
+    public async Task<ActionResult<LeaveRequest[]>> GetLeaveRequests([FromQuery] ulong? employeeId)
     {
-        if (User.Claims.GetUserRole() == Policies.EmployeePolicy)
-        {
-            return await leaveRequestRepository.GetLeaveRequestsOfEmployeeAsync(User.Claims.GetUserId());
-        }
+        if (employeeId is { } id) return await leaveRequestRepository.GetLeaveRequestsOfEmployeeAsync(id);
         return await leaveRequestRepository.GetLeaveRequestsAsync();
     }
 
-    [HttpGet, Route("{projectId}")]
-    public async Task<ActionResult<LeaveRequest>> GetLeaveRequest([FromRoute] ulong projectId)
+    [HttpGet, Route("my")]
+    public async Task<ActionResult<LeaveRequest[]>> GetEmployeeLeaveRequests()
     {
-        var leaveRequestResult = await leaveRequestRepository.GetLeaveRequestAsync(projectId);
+        var userId = User.Claims.GetUserId();
+        return await leaveRequestRepository.GetLeaveRequestsOfEmployeeAsync(userId);
+    }
 
-        return leaveRequestResult.Match<ActionResult<LeaveRequest>>(request =>
+    [HttpGet, Route("{requestId}")]
+    public async Task<ActionResult<LeaveRequest>> GetLeaveRequest([FromRoute] ulong requestId)
+    {
+        var leaveRequestResult = await leaveRequestRepository.GetLeaveRequestAsync(requestId);
+
+        return leaveRequestResult.Match(request =>
         {
             var userId = User.Claims.GetUserId();
             var role = User.Claims.GetUserRole();
@@ -45,9 +50,6 @@ public sealed class LeaveRequestsController(
 
             return request;
         }, exceptionHandlingService.HandleException<LeaveRequest>);
-
-            throw exception;
-        });
 
     }
 
@@ -65,9 +67,10 @@ public sealed class LeaveRequestsController(
                 Comment = request.Comment,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-                Employee = employee,
+                EmployeeId = userId,
                 Status = RequestStatus.New
             };
+
             await leaveRequestRepository.AddLeaveRequestAsync(leaveRequest);
 
             var result = await approvalRequestService.AddApprovalRequestAsync(leaveRequest.Id);
@@ -115,5 +118,40 @@ public sealed class LeaveRequestsController(
 
         return result.Match(request => request, exceptionHandlingService.HandleException<LeaveRequest>);
     }
+
+    [HttpPost, Route("{requestId}/cancel")]
+    public async Task<ActionResult<LeaveRequest>> CancelLeaveRequest([FromRoute] ulong requestId)
+    {
+        var userId = User.Claims.GetUserId();
+
+        await using var transaction = await dbUnitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            var leaveRequestResult = await leaveRequestRepository.GetLeaveRequestAsync(requestId);
+            if (leaveRequestResult.IsFailed) throw leaveRequestResult.Exception;
+            var leaveRequest = leaveRequestResult.Value;
+            if (leaveRequest.EmployeeId != userId) return Forbid();
+            if (leaveRequest.Status != RequestStatus.New) 
+                return BadRequest("You can only cancel leave requests with a `New` status");
+
+
+            leaveRequestResult = await leaveRequestRepository.UpdateLeaveRequestAsync(requestId, request =>
+            {
+                request.Status = RequestStatus.Cancelled;
+            });
+            if (leaveRequestResult.IsFailed) throw leaveRequestResult.Exception;
+            var approvalRequestResult = await approvalRequestRepository.GetApprovalRequestByLeaveRequestAsync(requestId);
+            if (approvalRequestResult.IsFailed) throw approvalRequestResult.Exception;
+            await approvalRequestService.CancelApprovalRequestAsync(approvalRequestResult.Value.Id);
+            await transaction.CommitAsync();
+
+            return leaveRequest;
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            return await exceptionHandlingService.HandleExceptionAsync(e);
+        }
     }
 }

@@ -11,7 +11,7 @@ using OutOfOffice.Server.Repositories;
 namespace OutOfOffice.Server.Controllers;
 
 [ApiController, Route("[controller]"), Authorize(Policy = Policies.ProjectManagerPolicy)]
-public class ProjectsController(
+public sealed class ProjectsController(
         IProjectRepository projectRepository,
         IEmployeeRepository employeeRepository
         ) : ControllerBase

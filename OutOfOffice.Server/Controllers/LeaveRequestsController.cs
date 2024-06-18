@@ -12,7 +12,7 @@ using OutOfOffice.Server.Repositories.Implementation;
 namespace OutOfOffice.Server.Controllers;
 
 [ApiController, Route("/requests/leave/"), Authorize(Policy = Policies.EmployeePolicy)]
-public class LeaveRequestsController(
+public sealed class LeaveRequestsController(
     DbUnitOfWork dbUnitOfWork,
     ILeaveRequestRepository leaveRequestRepository,
     IApprovalRequestRepository approvalRequestRepository,

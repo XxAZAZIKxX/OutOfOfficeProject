@@ -10,7 +10,7 @@ using OutOfOffice.Server.Repositories;
 namespace OutOfOffice.Server.Controllers;
 
 [ApiController, Route("[controller]")]
-public class AuthController(
+public sealed class AuthController(
     IAuthRepository authRepository,
     JwtConfiguration jwtConfiguration,
     IRefreshTokenRepository refreshTokenRepository,

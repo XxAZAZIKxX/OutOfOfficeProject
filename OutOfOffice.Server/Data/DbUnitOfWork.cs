@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using OutOfOffice.Server.Data;
 
-namespace OutOfOffice.Server.Repositories.Implementation;
+namespace OutOfOffice.Server.Data;
 
 /// <summary>
 /// Represents a unit of work for database operations. Uses <see cref="DataContext"/>
 /// </summary>
-public class DbUnitOfWork(DataContext dataContext)
+public sealed class DbUnitOfWork(DataContext dataContext)
 {
     /// <summary>
     /// Saves all changes made in this unit of work to the underlying database.
